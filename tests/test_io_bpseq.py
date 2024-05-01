@@ -1,7 +1,7 @@
 import pytest
 import tempfile
-from nskit import NA, bpseqRead, bpseqWrite
-from nskit.exceptions import InvalidStructure
+from naskit import NA, bpseqRead, bpseqWrite
+from naskit.exceptions import InvalidStructure
 
 
 self_bound_bpseq = \

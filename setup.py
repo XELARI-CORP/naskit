@@ -8,10 +8,10 @@ with open(Path(__file__).parent/'README.md') as f:
     
 
 setup(
-    name = 'nskit',
+    name = 'naskit',
     version = '1.8.0',
     author = 'Artem Mukanov',
-    url = 'https://github.com/Arty40m/nskit',
+    url = 'https://github.com/NANOBIOROBOTS-INC/naskit',
     description = 'Library for processing nucleic acid secondary structure',
     long_description = long_description,
     license = 'LGPLv3', 
@@ -32,6 +32,6 @@ setup(
     extras_require = {'dev':['pytest']}, 
     
     ext_modules=[
-        Extension('nskit.algo.levenshtein._levenshtein', ['nskit/algo/levenshtein/levenshtein.c']),
+        Extension('naskit.algo.levenshtein._levenshtein', ['naskit/algo/levenshtein/levenshtein.c']),
                 ]
 )
