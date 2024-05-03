@@ -6,7 +6,7 @@
 python3 -m pip install -e .
 ```
 
-Test nskit:
+Test naskit:
 ```
 python3 -m pip install -e .[dev]
 pytest test
