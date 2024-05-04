@@ -1,0 +1,42 @@
+name: Build and publish package
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: master
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install pytest
+
+    - name: Install package from source
+      run: python3 -m pip install -vvv .
+
+    - name: Run tests
+      run: pytest -v tests
+
+    - name: Install build dependencies
+      run: python3 -m pip install poetry twine
+    
+    - name: Build wheel
+      run: poetry build -vvv -f wheel
+    
+    - name: Publish package
+      run: twine upload -u __token__ -p ${{ secrets.PYPI_API_TOKEN }} --non-interactive --skip-existing dist/*
