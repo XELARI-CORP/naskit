@@ -24,7 +24,7 @@ class bpseqRead:
         elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper. Got {type(file)}")
             
         self.raise_na_errors = raise_na_errors
         self.name = os.path.basename(file).split('.')[0] if file_as_name else None
@@ -164,13 +164,13 @@ class bpseqDirRead:
                 
 class bpseqWrite:
     
-    def __init__(self, file: Union[str, Path]):
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper]):
         if isinstance(file, (str, Path)):
             self._file = open(file, 'w')
-        elif isinstance(file, TextIOWrapper):
+        elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper. Got {type(file)}")
         
         
     def __enter__(self):

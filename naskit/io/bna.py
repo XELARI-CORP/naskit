@@ -57,7 +57,7 @@ class bnaWrite:
         elif isinstance(file, (BufferedWriter, BufferedRandom, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, BufferedWriter")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, BufferedWriter. Got {type(file)}")
         
         
     def __enter__(self):
@@ -166,7 +166,7 @@ class bnaRead:
         elif isinstance(file, (BufferedWriter, BufferedRandom, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper. Got {type(file)}")
         
         self._iterator = self._iterate()
         

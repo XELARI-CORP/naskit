@@ -48,7 +48,7 @@ class pdbRead:
         elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper. Got {type(file)}")
         
         self.assert_non_sequential = assert_non_sequential
         self.split_chain_by_name = split_chain_by_name
