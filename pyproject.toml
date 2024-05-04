@@ -17,7 +17,7 @@ classifiers = [
 
 include = [
     {path = 'naskit/algo/levenshtein/*.so', format = 'wheel'},
-    {path = 'naskit/algo/levenshtein/*.dll', format = 'wheel'}
+    {path = 'naskit/algo/levenshtein/*.pyd', format = 'wheel'}
 ]
 
 [tool.poetry.dependencies]
