@@ -71,7 +71,7 @@ double weighted_levenshtein(const char* a, const char* b,
     
     double result;
     double diagonal_cost = 0.;
-    double* A = malloc(sizeof(double)*aN*bN);
+    double* A = (double*)malloc(sizeof(double)*aN*bN);
     for (int i=1; i<aN; i++){A[i*bN] = (double)i * rm;}
     for (int j=0; j<bN; j++){A[j] = (double)j * ins;}
     
