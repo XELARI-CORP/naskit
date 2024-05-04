@@ -2,6 +2,7 @@ from typing import Iterator, Optional, Union
 import os
 from pathlib import Path
 from io import TextIOWrapper
+from tempfile import _TemporaryFileWrapper
 
 from ..containers import NucleicAcid
 from ..exceptions import InvalidStructure
@@ -13,14 +14,14 @@ META_SEPARATOR = ": "
 
 class bpseqRead:
     
-    def __init__(self, file: Union[str, Path, TextIOWrapper], *, 
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper], *, 
                  raise_na_errors: bool = False, 
                  file_as_name: bool = False, 
                 ):
         
         if isinstance(file, (str, Path)):
             self._file = open(file)
-        elif isinstance(file, TextIOWrapper):
+        elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
             raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")

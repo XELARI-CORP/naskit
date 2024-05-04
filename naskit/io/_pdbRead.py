@@ -1,6 +1,7 @@
 from typing import Union, List, Dict
 from pathlib import Path
 from io import TextIOWrapper
+from tempfile import _TemporaryFileWrapper
 import numpy as np
 
 from ..exceptions import InvalidPDB
@@ -38,13 +39,13 @@ class Residue():
     
 
 class pdbRead:
-    def __init__(self, file: Union[str, Path, TextIOWrapper], *, 
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper], *, 
                  assert_non_sequential: bool = False, 
                  split_chain_by_name: bool = False
                  ):
         if isinstance(file, (str, Path)):
             self._file = open(file)
-        elif isinstance(file, TextIOWrapper):
+        elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
             raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")

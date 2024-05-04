@@ -1,6 +1,7 @@
 from typing import Iterator, Iterable, Optional, Union, List
 from pathlib import Path
 from io import TextIOWrapper
+from tempfile import _TemporaryFileWrapper
 
 from ..containers import NucleicAcid
 from ..exceptions import InvalidFasta
@@ -9,10 +10,10 @@ from ..exceptions import InvalidFasta
 
 class dotLinesRead:
 
-    def __init__(self, file: Union[str, Path, TextIOWrapper]):
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper]):
         if isinstance(file, (str, Path)):
             self._file = open(file)
-        elif isinstance(file, TextIOWrapper):
+        elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
             raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
@@ -80,13 +81,13 @@ class dotLinesRead:
 
 class dotLinesWrite:
     
-    def __init__(self, file: Union[str, Path, TextIOWrapper], *, 
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper], *, 
                  append: bool = False,
                 ):
         
         if isinstance(file, (str, Path)):
             self._file = open(file, 'a' if append else 'w')
-        elif isinstance(file, TextIOWrapper):
+        elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
             raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
