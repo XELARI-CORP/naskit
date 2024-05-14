@@ -1,5 +1,7 @@
 from typing import Iterator, Iterable, Optional, Union, List
 from pathlib import Path
+from io import TextIOWrapper
+from tempfile import _TemporaryFileWrapper
 
 from .dotLines import dotLinesRead, dotLinesWrite
 from ..parse_na import NA
@@ -13,7 +15,7 @@ META_SEPARATOR = ": "
 
 class dotRead(dotLinesRead):
     
-    def __init__(self, file: Union[str, Path], *, 
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper], *, 
                  raise_na_errors: bool = False, 
                  ignore_unclosed_bonds: bool = False, 
                  upper_sequence: bool = False,

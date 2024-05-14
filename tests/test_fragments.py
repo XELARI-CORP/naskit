@@ -1,6 +1,6 @@
 import pytest
-from nskit import NA
-from nskit.containers import Helix, Hairpin, InternalLoop, Bulge, Junction
+from naskit import NA
+from naskit.containers import Helix, Hairpin, InternalLoop, Bulge, Junction
 
 class TestLoops:
     

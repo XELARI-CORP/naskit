@@ -1,7 +1,7 @@
 import pytest
 import tempfile
-from nskit import NA, dotRead, dotWrite, fastaRead, fastaWrite, dotLinesRead, dotLinesWrite
-from nskit.exceptions import InvalidFasta
+from naskit import NA, dotRead, dotWrite, fastaRead, fastaWrite, dotLinesRead, dotLinesWrite
+from naskit.exceptions import InvalidFasta
 
 
 

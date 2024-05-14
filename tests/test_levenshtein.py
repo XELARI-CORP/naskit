@@ -1,6 +1,6 @@
 import pytest
-from nskit import NA
-from nskit.algo import levdist
+from naskit import NA
+from naskit.algo import levdist
 
 
 

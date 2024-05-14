@@ -1,6 +1,7 @@
 from typing import Union, Iterator
 from pathlib import Path
 from io import BufferedWriter, BufferedRandom
+from tempfile import _TemporaryFileWrapper
 import math
 
 from ..containers import NucleicAcid
@@ -47,16 +48,16 @@ Maximum memory consumption is [1.25*N + 5] bytes for N nbs.
 
 class bnaWrite:
     
-    def __init__(self, file: Union[str, Path, BufferedWriter, BufferedRandom], *, 
+    def __init__(self, file: Union[str, Path, BufferedWriter, BufferedRandom, _TemporaryFileWrapper], *, 
                  append: bool = False,
                 ):
         
         if isinstance(file, (str, Path)):
             self._file = open(file, 'ab' if append else 'wb')
-        elif isinstance(file, (BufferedWriter, BufferedRandom)):
+        elif isinstance(file, (BufferedWriter, BufferedRandom, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, BufferedWriter")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, BufferedWriter. Got {type(file)}")
         
         
     def __enter__(self):
@@ -159,13 +160,13 @@ class bnaWrite:
 
 class bnaRead:
 
-    def __init__(self, file: Union[str, Path, BufferedWriter, BufferedRandom]):
+    def __init__(self, file: Union[str, Path, BufferedWriter, BufferedRandom, _TemporaryFileWrapper]):
         if isinstance(file, (str, Path)):
             self._file = open(file, 'rb')
-        elif isinstance(file, (BufferedWriter, BufferedRandom)):
+        elif isinstance(file, (BufferedWriter, BufferedRandom, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper. Got {type(file)}")
         
         self._iterator = self._iterate()
         

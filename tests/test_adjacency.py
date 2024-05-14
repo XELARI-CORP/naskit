@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
-from nskit import NA, NucleicAcid
-from nskit.exceptions import InvalidStructure, InvalidAdjacency
+from naskit import NA, NucleicAcid
+from naskit.exceptions import InvalidStructure, InvalidAdjacency
 
 
 asymmetric_adjacency = np.array([

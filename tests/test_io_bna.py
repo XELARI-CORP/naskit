@@ -1,6 +1,6 @@
 import pytest
 import tempfile
-from nskit import NA, bnaRead, bnaWrite
+from naskit import NA, bnaRead, bnaWrite
 
 
 

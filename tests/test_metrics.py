@@ -1,5 +1,5 @@
 import pytest
-import nskit as nsk
+import naskit as nsk
 import numpy as np
 
 

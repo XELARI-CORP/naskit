@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "naskit"
+version = "0.8.0"
+description = "Library for processing nucleic acid secondary structure"
+authors = ["Artem Mukanov <artem.liamkrow@gmail.com>"]
+license = "LGPLv3"
+readme = "README.md"
+homepage = "https://github.com/NANOBIOROBOTS-INC/naskit"
+classifiers = [
+        'Programming Language :: Python :: 3 :: Only', 
+        'Topic :: Scientific/Engineering', 
+        'Topic :: Scientific/Engineering :: Bio-Informatics', 
+        'Topic :: Software Development :: Libraries', 
+        'Topic :: Software Development :: Libraries :: Python Modules', 
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
+]
+
+include = [
+    {path = 'naskit/algo/levenshtein/*.so', format = 'wheel'},
+    {path = 'naskit/algo/levenshtein/*.pyd', format = 'wheel'}
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.18.5"
+
+[build-system]
+requires = ["poetry-core", "setuptools"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.build]
+script = "build.py"
+generate-setup-file = false

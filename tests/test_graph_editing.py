@@ -1,6 +1,6 @@
 import pytest
-from nskit import NA
-from nskit.exceptions import InvalidSequence, InvalidStructure
+from naskit import NA
+from naskit.exceptions import InvalidSequence, InvalidStructure
 
 
 
