@@ -1,11 +1,12 @@
 from typing import Union, List, Dict
 from pathlib import Path
 from io import TextIOWrapper
+from tempfile import _TemporaryFileWrapper
 import numpy as np
 
 from ..containers.pdb.pdbAtom import PdbAtom
-from ..containers.pdb.pdbMolecule import PdbMolecule, PdbResidue
-from ..containers.pdb.pdbContainer import PDB, PDBChain, PDBModels
+from ..containers.pdb.pdbMolecule import PdbMolecule, PdbResidue, NucleicAcidResidue, AminoacidResidue
+from ..containers.pdb.pdbContainer import PDB, PDBModels, NucleicAcidChain, ProteinChain
 from ..exceptions import InvalidPDB
 
 
@@ -22,10 +23,10 @@ AMINOACID_NAMES = {'ALA', 'CYS', 'ASP', 'GLU',
 
 
 class pdbRead:
-    def __init__(self, file: Union[str, Path, TextIOWrapper]):
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper]):
         if isinstance(file, (str, Path)):
             self._file = open(file)
-        elif isinstance(file, TextIOWrapper):
+        elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
             raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
@@ -72,7 +73,7 @@ class pdbRead:
         for l in lines:
             if l.startswith("ATOM") or l.startswith("HETATM"):
                 atom = PdbAtom.from_pdb_line(l)
-                if atom.altloc not in (' ', 'A'): # altloc != ' ' or 'A'
+                if atom.altloc not in (' ', 'A'): # anisotropic temperature factors
                     continue
                 tokens.append(atom)
                 
@@ -82,12 +83,12 @@ class pdbRead:
         return tokens
     
     
-    def split_models(self, atoms):
+    def split_models(self, tokens):
         models = []
         model_state = 0 # 0 - undefined, 1 - opened (after MODEL), 2 - closed (ENDMDL)
         model_components = []
         
-        for a in atoms:
+        for a in tokens:
             if isinstance(a, PdbAtom) or a.startswith("TER"):
                 model_components.append(a)
                 
@@ -155,7 +156,7 @@ class pdbRead:
         reset_chain = True
         
         for m in mol_tokens:
-            if isinstance(m, PdbResidue):
+            if isinstance(m, (NucleicAcidResidue, AminoacidResidue)):
                 if reset_chain:
                     cur_chain = m.chain
                     reset_chain = False
@@ -186,8 +187,10 @@ class pdbRead:
         
         
     def make_mol(self, atoms):
-        if (atoms[0].mol_name in NA_NAMES) or (atoms[0].mol_name in AMINOACID_NAMES):
-            m = PdbResidue()
+        if atoms[0].mol_name in NA_NAMES:
+            m = NucleicAcidResidue()
+        elif atoms[0].mol_name in AMINOACID_NAMES:
+            m = AminoacidResidue()
         else:
             m = PdbMolecule()
             
@@ -197,7 +200,14 @@ class pdbRead:
     
     
     def make_chain(self, mols):
-        chain = PDBChain()
+        if isinstance(mols[0], NucleicAcidResidue):
+            chain = NucleicAcidChain()
+        elif isinstance(mols[0], AminoacidResidue):
+            chain = ProteinChain()
+        else:
+            raise ValueError(f"Expected NucleicAcidResidue or AminoacidResidue, "
+                             f"got first molecule of type {type(mols[0])}.")
+        
         for m in mols:
             chain.add(m)
         

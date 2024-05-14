@@ -32,14 +32,19 @@ class PdbMolecule:
     def add_atom(self, atom: PdbAtom):
         if len(self.__atoms):
             if self.__name_idx_map.get(atom.name) is not None:
-                raise ValueError(f"Atom ({atom.atomn}) with name {atom.name} already exists in molecule.")
+                raise ValueError(f"Atom ({atom.atomn}) with name {atom.name} "
+                                 f"already exists in molecule.")
             
             a = self.__atoms[0]
             if atom.mol_name!=a.mol_name:
-                raise ValueError(f"All atoms of a molecule (number {a.moln}) must have the same molecule name ({a.mol_name}), got {atom.mol_name}.")
+                raise ValueError(f"All atoms of a molecule (number {a.moln}) "
+                                 f"must have the same molecule name ({a.mol_name}), "
+                                 f"got {atom.mol_name}.")
 
             if atom.chain!=a.chain:
-                raise ValueError(f"All atoms of a molecule (number {a.moln}) must have the same chain name ({a.chain}), got {atom.chain}.")
+                raise ValueError(f"All atoms of a molecule (number {a.moln}) "
+                                 f"must have the same chain name ({a.chain}), "
+                                 f"got {atom.chain}.")
             
         self.__atoms.append(atom)
         self.__name_idx_map[atom.name] = len(self.__atoms)
@@ -87,5 +92,15 @@ class PdbMolecule:
             
             
 class PdbResidue(PdbMolecule):
+    def __init__(self):
+        super().__init__()
+        
+        
+class NucleicAcidResidue(PdbResidue):
+    def __init__(self):
+        super().__init__()
+        
+        
+class AminoacidResidue(PdbResidue):
     def __init__(self):
         super().__init__()
