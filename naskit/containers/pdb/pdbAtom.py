@@ -53,7 +53,11 @@ class PdbAtom:
             
         occupancy = f"{self.occupancy:>6.2f}" if isinstance(self.occupancy, float) else " "*6
         temp = f"{self.temp:>6.2f}" if isinstance(self.temp, float) else " "*6
-        charge = ['  ', '+ ', '- '][self.charge]
+        
+        charge = ''
+        if self.charge!=0:
+            charge = ('-', '+')[int(self.charge>0)] + str(abs(self.charge))
+            charge = charge.rstrip('1')
         
         return (f"{atom_type:<6}{self.atomn:>5} "
                 f"{name}{self.altloc:>1}"
@@ -61,7 +65,7 @@ class PdbAtom:
                 f"{self.insert_code:>1}   "
                 f"{self.coords[0]:>8.3f}{self.coords[1]:>8.3f}{self.coords[2]:>8.3f}"
                 f"{occupancy}{temp}      "
-                f"{self.segment:<4}{self.element:>2}{charge}"
+                f"{self.segment:<4}{self.element:>2}{charge:<2}"
                )
     
     @staticmethod
@@ -107,12 +111,13 @@ class PdbAtom:
                 raise InvalidPDB(f"Atom {atomn} {name} has no element field.")
             element = element_derive_func(is_hetatm, name, mol_name, chain)     
         
-        charge = line[78:80].strip()           # Charge
-        if charge=='': charge = 0
-        elif charge=='+': charge = 1
-        elif charge=='-': charge = -1
-        else:
-            raise InvalidPDB(f"Invalid atom charge '{charge}' in atom {atomn} {name}, expected + - or nothing.")
+        charge = line[78:80].strip()          # Charge
+        if charge=='': charge = '0'
+        elif charge in ('-', '+'): charge+='1'
+        try:
+            charge = int(charge)
+        except:
+            raise InvalidPDB(f"Invalid atom charge '{charge}' in atom {atomn} {name}.")
         
         return PdbAtom(is_hetatm, atomn, name, altloc, mol_name, chain, moln, insert_code,
                     x, y, z, occupancy, temp, segment, element, charge)

@@ -2,6 +2,7 @@ from typing import Union, List
 import numpy as np
 from .pdbAtom import PdbAtom
 from .pdbMolecule import PdbMolecule, PdbResidue, NucleicAcidResidue, AminoacidResidue
+from ...exceptions import InvalidPDB
 
 
     
@@ -41,8 +42,13 @@ class PDBChain(PDBCompounds):
         if len(self):
             res = self[0]
             if residue.chain!=res.chain:
-                raise ValueError(f"All residues of a chain must have the same chain name ({res.chain}), "
+                raise InvalidPDB(f"All residues of a chain must have the same chain name ({res.chain}), "
                                  f"got {residue.chain} in residue with first atom - "
+                                 f"{residue[0].atomn} {residue[0].name}.")
+                
+            if residue.moln==res.moln:
+                raise InvalidPDB(f"Residue with molecule number {residue.moln} "
+                                 f"already exists in chain. Tried to add residue with first atom - "
                                  f"{residue[0].atomn} {residue[0].name}.")
             
         super().add(residue)
@@ -57,7 +63,7 @@ class NucleicAcidChain(PDBChain):
             last_residue_message = ""
             if len(self):
                 last_residue_message = f"Last residue starts with atom - {residue[0].atomn} {residue[0].name}"
-            raise ValueError(f"Expected NucleicAcidResidue, got {type(residue)}. {last_residue_message}")
+            raise InvalidPDB(f"Expected NucleicAcidResidue, got {type(residue)}. {last_residue_message}")
             
         super().add(residue)
         
@@ -71,7 +77,7 @@ class ProteinChain(PDBChain):
             last_residue_message = ""
             if len(self):
                 last_residue_message = f"Last residue starts with atom - {residue[0].atomn} {residue[0].name}"
-            raise ValueError(f"Expected AminoacidResidue, got {type(residue)}. {last_residue_message}")
+            raise InvalidPDB(f"Expected AminoacidResidue, got {type(residue)}. {last_residue_message}")
             
         super().add(residue)
         
@@ -111,10 +117,11 @@ class PDB(PDBCompounds):
         
         
 class PDBModels:
-    __slots__ = ("__models", )
+    __slots__ = ("__models", "header")
     
-    def __init__(self, models: List[PDB]):
+    def __init__(self, models: List[PDB], header: str = ""):
         self.__models = models
+        self.header = header
         
     def __getitem__(self, i: int):
         return self.__models[i]

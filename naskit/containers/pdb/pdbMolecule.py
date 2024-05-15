@@ -1,6 +1,7 @@
 from typing import Union, List
 import numpy as np
 from .pdbAtom import PdbAtom
+from ...exceptions import InvalidPDB
 
 
 
@@ -32,17 +33,17 @@ class PdbMolecule:
     def add_atom(self, atom: PdbAtom):
         if len(self.__atoms):
             if self.__name_idx_map.get(atom.name) is not None:
-                raise ValueError(f"Atom ({atom.atomn}) with name {atom.name} "
+                raise InvalidPDB(f"Atom ({atom.atomn}) with name {atom.name} "
                                  f"already exists in molecule.")
             
             a = self.__atoms[0]
             if atom.mol_name!=a.mol_name:
-                raise ValueError(f"All atoms of a molecule (number {a.moln}) "
+                raise InvalidPDB(f"All atoms of a molecule (number {a.moln}) "
                                  f"must have the same molecule name ({a.mol_name}), "
                                  f"got {atom.mol_name}.")
 
             if atom.chain!=a.chain:
-                raise ValueError(f"All atoms of a molecule (number {a.moln}) "
+                raise InvalidPDB(f"All atoms of a molecule (number {a.moln}) "
                                  f"must have the same chain name ({a.chain}), "
                                  f"got {atom.chain}.")
             
@@ -58,7 +59,7 @@ class PdbMolecule:
         elif isinstance(i, str):
             return self.__atoms[self.__name_idx_map[i]]
         else:
-            raise ValueError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
+            raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
             
     def delete_atom(self, i: Union[int, str]):
         if isinstance(i, int):
@@ -66,7 +67,7 @@ class PdbMolecule:
         elif isinstance(i, str):
             return self.__atoms.pop(self.__name_idx_map[i])
         else:
-            raise ValueError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
+            raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
         self._remap()
         
     

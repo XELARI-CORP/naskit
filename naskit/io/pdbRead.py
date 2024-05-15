@@ -29,7 +29,7 @@ class pdbRead:
         elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
             self._file = file
         else:
-            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper")
+            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper. Got {type(file)}")
         
     def __enter__(self):
         return self
@@ -49,7 +49,7 @@ class pdbRead:
         for i, l in enumerate(lines):
             if l.startswith("ATOM") or \
                 l.startswith("HETATM") or \
-                 l.startswith("MODEL"):
+                l.startswith("MODEL"):
                 break
                 
         header = "" if i==0 else "\n".join(lines[:i])
@@ -64,7 +64,7 @@ class pdbRead:
             for component in model: pdb.add(component)
             models[i] = pdb
             
-        return PDBModels(models)
+        return PDBModels(models, header)
     
         
     def parse_atoms(self, lines):
@@ -141,11 +141,14 @@ class pdbRead:
                 mol_atoms.append(at)
                 
             else:
-                if len(mol_atoms)>0:
+                if len(mol_atoms):
                     mol_tokens.append(self.make_mol(mol_atoms))
                 mol_atoms = []
                 reset_mol_idx = True
                 mol_tokens.append(at)
+                
+        if len(mol_atoms):
+            mol_tokens.append(self.make_mol(mol_atoms))
                 
         return mol_tokens
                 
@@ -164,7 +167,7 @@ class pdbRead:
                 if m.chain!=cur_chain:
                     chains.append(self.make_chain(chain_mols))
                     chain_mols = []
-                    cur_chain = at.chain
+                    cur_chain = m.chain
                     
                 chain_mols.append(m)
                 
@@ -182,6 +185,9 @@ class pdbRead:
                 chains.append(self.make_chain(chain_mols))
                 chain_mols = []
                 reset_chain = True
+                
+        if len(chain_mols):
+            chains.append(self.make_chain(chain_mols))
             
         return chains
         
