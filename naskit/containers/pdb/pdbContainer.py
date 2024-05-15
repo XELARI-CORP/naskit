@@ -27,6 +27,11 @@ class PDBCompounds:
                                   NucleicAcidResidue, AminoacidResidue, 
                                   "NucleicAcidChain", "ProteinChain"]):   
         self.__comps.append(compound)
+        
+        
+    @property
+    def natoms(self):
+        return sum([c.natoms for c in self.__comps])
 
 
 # CHAIN
@@ -99,6 +104,7 @@ class PDB(PDBCompounds):
                 if nmols:
                     s.append(f"[{moli:>3}] - {nmols} {molt} with name {mol_name}")
                     nmols = 0
+                    mol_name = None
                 s.append(f"[{i:>3}] - {repr(c)}")
             
             else:
@@ -119,7 +125,7 @@ class PDB(PDBCompounds):
 class PDBModels:
     __slots__ = ("__models", "header")
     
-    def __init__(self, models: List[PDB], header: str = ""):
+    def __init__(self, models: List[PDB], header: List[str] = []):
         self.__models = models
         self.header = header
         
@@ -128,3 +134,6 @@ class PDBModels:
     
     def __len__(self):
         return len(self.__models)
+    
+    def __iter__(self):
+        return iter(self.__models)

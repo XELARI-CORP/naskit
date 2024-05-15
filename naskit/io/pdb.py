@@ -218,3 +218,77 @@ class pdbRead:
             chain.add(m)
         
         return chain
+    
+    
+class pdbWrite:
+    def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper]):  
+        if isinstance(file, (str, Path)):
+            self._file = open(file, 'w')
+        elif isinstance(file, (TextIOWrapper, _TemporaryFileWrapper)):
+            self._file = file
+        else:
+            raise TypeError(f"Invalid file type. Accepted - string, Path, TextIOWrapper. Got {type(file)}")
+        
+    def __enter__(self):
+        return self
+    
+    def close(self):
+        self._file.close()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+
+    def write(self, 
+              data: Union[PdbMolecule, NucleicAcidResidue, AminoacidResidue,
+                          NucleicAcidChain, ProteinChain, 
+                          PDB, PDBModels],
+              reenum_atoms: bool = False,
+              reenum_mols: bool = False,
+              rename_chains: bool = False,
+              write_header: bool = False
+             ):
+        
+        ## re enum
+        
+        if isinstance(data, PDBModels):
+            if write_header and len(data.header):
+                self._file.write(data.header + "\n")
+            self.write_models(data)
+            
+        elif isinstance(data, PDB):
+            self.write_pdb(data)
+            
+        elif isinstance(data, (NucleicAcidChain, ProteinChain)):
+            self.write_chain(data)
+            
+        elif isinstance(data, (PdbMolecule, NucleicAcidResidue, AminoacidResidue)):
+            self.write_molecule(data)
+        
+        else:
+            raise TypeError(f"Pdb writer can not write object of type {type(data)}. "
+                             f"Expected - PdbMolecule, NucleicAcidResidue, AminoacidResidue, "
+                             f"NucleicAcidChain, ProteinChain, PDB, PDBModels.")
+            
+            
+    def write_models(self, data):
+        for i, m in enumerate(data):
+            self._file.write(f"MODEL        {i+1}".ljust(80) + "\n")
+            self.write_pdb(m)
+            self._file.write(f"ENDMDL\n")
+        
+    def write_pdb(self, data):
+        for i, c in enumerate(data):
+            if isinstance(c, (NucleicAcidChain, ProteinChain)):
+                self.write_chain(c)
+            else:
+                self.write_molecule(c)
+        
+    def write_chain(self, data):
+        for m in data:
+            self.write_molecule(m)
+        self._file.write(f"TER\n")
+        
+    def write_molecule(self, data):
+        for a in data:
+            self._file.write(f"{str(a)}\n")

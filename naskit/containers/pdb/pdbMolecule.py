@@ -72,6 +72,10 @@ class PdbMolecule:
         
     
     @property
+    def natoms(self):
+        return len(self)
+    
+    @property
     def moln(self):
         return self.__atoms[0].moln
     
