@@ -61,6 +61,20 @@ class PDBCompounds:
     @property
     def natoms(self):
         return sum([c.natoms for c in self.__comps])
+    
+    @property
+    def coords(self):
+        return np.concatenate([c.coords for c in self.__comps], axis=0)
+    
+    @coords.setter
+    def coords(self, coords: np.ndarray):
+        if coords.shape[0]!=self.natoms or coords.shape[1]!=3:
+            raise ValueError(f"Coords matrix must have shape: ({self.natoms}, 3), got {coords.shape}")
+            
+        offset = 0
+        for c in self.__comps:
+            c.coords = coords[offset:(offset + c.natoms)]
+            offset += c.natoms
 
 
 # CHAIN

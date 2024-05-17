@@ -115,12 +115,12 @@ class PdbMolecule:
         return np.stack([a.coords for a in self.__atoms])
     
     @coords.setter
-    def coords(self, c: np.ndarray):
-        if len(self)!=c.shape[0] or c.shape[1]!=3:
-            raise ValueError(f"Coords matrix must have shape: ({len(self)}, 3), got {c.shape}")
+    def coords(self, coords: np.ndarray):
+        if coords.shape[0]!=len(self) or coords.shape[1]!=3:
+            raise ValueError(f"Coords matrix must have shape: ({len(self)}, 3), got {coords.shape}")
             
-        for i in range(c.shape[0]):
-            self.__atoms[i].coords = c[i]
+        for i in range(coords.shape[0]):
+            self.__atoms[i].coords = coords[i]
             
             
 class PdbResidue(PdbMolecule):
