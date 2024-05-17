@@ -70,6 +70,11 @@ class PdbMolecule:
             raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
         self._remap()
         
+        
+    def renum_atoms(self, initn: int = 1):
+        for i, a in enumerate(self.__atoms):
+            a.atomn = initn + i
+        
     
     @property
     def natoms(self):
@@ -79,9 +84,31 @@ class PdbMolecule:
     def moln(self):
         return self.__atoms[0].moln
     
+    @moln.setter
+    def moln(self, moln: int):
+        for a in self.__atoms:
+            a.moln = moln
+            
+    @property
+    def name(self):
+        return self.__atoms[0].mol_name
+    
+    @name.setter
+    def name(self, name: str):
+        for a in self.__atoms:
+            a.mol_name = name
+    
     @property
     def chain(self):
         return self.__atoms[0].chain
+    
+    @chain.setter
+    def chain(self, chain_name: str):
+        if (not chain_name.isascii()) or (not chain_name.isupper() or len(chain_name)!=1):
+            raise ValueError(f"Chain name must be a single upper ascii character, got {chain_name}.")
+            
+        for a in self.__atoms:
+            a.chain = chain_name
     
     @property
     def coords(self):

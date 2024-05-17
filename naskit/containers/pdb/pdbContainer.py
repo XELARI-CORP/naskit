@@ -21,6 +21,9 @@ class PDBCompounds:
     
     def __iter__(self):
         return iter(self.__comps)
+    
+    def __str__(self):
+        return "\n".join([str(c) for c in self])
         
         
     def add(self, compound: Union[PdbMolecule, 
@@ -28,6 +31,32 @@ class PDBCompounds:
                                   "NucleicAcidChain", "ProteinChain"]):   
         self.__comps.append(compound)
         
+        
+    def renum_atoms(self, initn: int = 1):
+        offset = 0
+        for c in self.__comps:
+            c.renum_atoms(initn + offset)
+            offset += c.natoms
+            
+    def renum_mols(self, initn: int = 1):
+        offset = 0
+        for c in self.__comps:
+            if isinstance(c, (PdbMolecule, NucleicAcidResidue, AminoacidResidue)):
+                c.moln = (initn + offset)
+                offset += 1
+            else: # chain
+                c.renum_mols(initn + offset)
+                offset += len(c)
+                
+    def rename_chains(self, chain_name: str = "A"):
+        ch = ord(chain_name)
+        for i, c in enumerate(self.__comps):
+            if isinstance(c, (PdbMolecule, NucleicAcidResidue, AminoacidResidue)):
+                c.chain = chr(ch)
+            else:
+                c.rename_chains(chr(ch))
+                ch = ch+1 if ch<90 else 65
+                
         
     @property
     def natoms(self):
@@ -42,6 +71,9 @@ class PDBChain(PDBCompounds):
         
     def __repr__(self):
         return f"{self.__class__.__name__} with {len(self)} {self[0].__class__.__name__} residues at {hex(id(self))}"
+    
+    def __str__(self):
+        return "\n".join([str(c) for c in self]) + "\nTER"
                 
     def add(self, residue: Union[NucleicAcidResidue, AminoacidResidue]):
         if len(self):
@@ -115,7 +147,7 @@ class PDB(PDBCompounds):
                 if nmols==0: 
                     moli = i
                     molt = c.__class__.__name__
-                    mol_name = c[0].mol_name
+                    mol_name = c.name
                 nmols+=1
         
         if nmols: s.append(f"[{moli:>3}] - {nmols} {molt} with name {mol_name}")
@@ -137,3 +169,12 @@ class PDBModels:
     
     def __iter__(self):
         return iter(self.__models)
+    
+    def __str__(self):
+        s = []
+        for i, m in enumerate(self.__models):
+            s.append(f"MODEL        {i+1}".ljust(80))
+            s.append(str(m))
+            s.append(f"ENDMDL")
+        
+        return "\n".join(s)

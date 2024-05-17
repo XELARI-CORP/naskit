@@ -100,9 +100,13 @@ class PdbAtom:
         
         if (occupancy:=line[54:60].strip()):   # Occupancy
             occupancy = float(occupancy)
+        else:
+            occupancy = 1.
             
         if (temp:=line[60:66].strip()):        # Temperature factor
             temp = float(temp)
+        else:
+            temp = 0.
         
         segment = line[72:76]                  # Segment identifier
         element = line[76:78].strip()          # Element symbol

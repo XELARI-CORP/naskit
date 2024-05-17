@@ -41,7 +41,11 @@ class pdbRead:
         self.close()
         
         
-    def read(self):
+    def read(self, 
+             derive_element: bool = False, 
+             element_derive_func = None
+            ):
+        
         lines = self._file.readlines()
         lines = list(map(lambda l: l.rstrip(), lines))
         
@@ -54,7 +58,9 @@ class pdbRead:
                 
         header = "" if i==0 else "\n".join(lines[:i])
         lines = lines[i:]
-        tokens = self.parse_atoms(lines)
+        tokens = self.parse_atoms(lines, 
+                                  derive_element=derive_element, 
+                                  element_derive_func=element_derive_func)
         models = self.split_models(tokens)
         
         for i, model in enumerate(models):
@@ -67,12 +73,19 @@ class pdbRead:
         return PDBModels(models, header)
     
         
-    def parse_atoms(self, lines):
+    def parse_atoms(self, 
+                    lines, 
+                    derive_element: bool = False, 
+                    element_derive_func = None
+                   ):
+        
         tokens = []
         
         for l in lines:
             if l.startswith("ATOM") or l.startswith("HETATM"):
-                atom = PdbAtom.from_pdb_line(l)
+                atom = PdbAtom.from_pdb_line(l, 
+                                             derive_element=derive_element, 
+                                             element_derive_func=element_derive_func)
                 if atom.altloc not in (' ', 'A'): # anisotropic temperature factors
                     continue
                 tokens.append(atom)
@@ -243,52 +256,17 @@ class pdbWrite:
               data: Union[PdbMolecule, NucleicAcidResidue, AminoacidResidue,
                           NucleicAcidChain, ProteinChain, 
                           PDB, PDBModels],
-              reenum_atoms: bool = False,
-              reenum_mols: bool = False,
-              rename_chains: bool = False,
               write_header: bool = False
              ):
         
-        ## re enum
-        
-        if isinstance(data, PDBModels):
-            if write_header and len(data.header):
-                self._file.write(data.header + "\n")
-            self.write_models(data)
-            
-        elif isinstance(data, PDB):
-            self.write_pdb(data)
-            
-        elif isinstance(data, (NucleicAcidChain, ProteinChain)):
-            self.write_chain(data)
-            
-        elif isinstance(data, (PdbMolecule, NucleicAcidResidue, AminoacidResidue)):
-            self.write_molecule(data)
-        
-        else:
+        if not isinstance(data, (PDBModels, PDB, 
+                               NucleicAcidChain, ProteinChain, 
+                               PdbMolecule, NucleicAcidResidue, AminoacidResidue)):
             raise TypeError(f"Pdb writer can not write object of type {type(data)}. "
                              f"Expected - PdbMolecule, NucleicAcidResidue, AminoacidResidue, "
                              f"NucleicAcidChain, ProteinChain, PDB, PDBModels.")
-            
-            
-    def write_models(self, data):
-        for i, m in enumerate(data):
-            self._file.write(f"MODEL        {i+1}".ljust(80) + "\n")
-            self.write_pdb(m)
-            self._file.write(f"ENDMDL\n")
         
-    def write_pdb(self, data):
-        for i, c in enumerate(data):
-            if isinstance(c, (NucleicAcidChain, ProteinChain)):
-                self.write_chain(c)
-            else:
-                self.write_molecule(c)
+        if isinstance(data, PDBModels) and write_header and len(data.header):
+            self._file.write(data.header + "\n")
         
-    def write_chain(self, data):
-        for m in data:
-            self.write_molecule(m)
-        self._file.write(f"TER\n")
-        
-    def write_molecule(self, data):
-        for a in data:
-            self._file.write(f"{str(a)}\n")
+        self._file.write(str(data))
