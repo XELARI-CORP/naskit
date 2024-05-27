@@ -115,11 +115,18 @@ class PdbAtom:
                 raise InvalidPDB(f"Atom {atomn} {name} has no element field.")
             element = element_derive_func(is_hetatm, name, mol_name, chain)     
         
-        charge = line[78:80].strip()          # Charge
-        if charge=='': charge = '0'
-        elif charge in ('-', '+'): charge+='1'
+        charge = line[78:80].strip()           # Charge
+        if charge=='': charge = "+0"
+        if len(charge)==1: charge = "1"+charge
+        sign, charge = sorted(charge)
         try:
             charge = int(charge)
+            if sign=='+':
+                pass
+            elif sign=='-':
+                charge *= -1
+            else:
+                raise
         except:
             raise InvalidPDB(f"Invalid atom charge '{charge}' in atom {atomn} {name}.")
         
