@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Iterable
 import numpy as np
 from .pdbAtom import PdbAtom
 from ...exceptions import InvalidPDB
@@ -48,7 +48,7 @@ class PdbMolecule:
                                  f"got {atom.chain}.")
             
         self.__atoms.append(atom)
-        self.__name_idx_map[atom.name] = len(self.__atoms)
+        self.__name_idx_map[atom.name] = len(self.__atoms) - 1
         
     def get_atom_idx(self, name: str):
         return self.__name_idx_map.get(name)
@@ -63,9 +63,9 @@ class PdbMolecule:
             
     def delete_atom(self, i: Union[int, str]):
         if isinstance(i, int):
-            return self.__atoms.pop(i)
+            self.__atoms.pop(i)
         elif isinstance(i, str):
-            return self.__atoms.pop(self.__name_idx_map[i])
+            self.__atoms.pop(self.__name_idx_map[i])
         else:
             raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
         self._remap()
@@ -123,16 +123,10 @@ class PdbMolecule:
             self.__atoms[i].coords = coords[i]
             
             
-class PdbResidue(PdbMolecule):
-    def __init__(self):
-        super().__init__()
-        
-        
-class NucleicAcidResidue(PdbResidue):
-    def __init__(self):
-        super().__init__()
-        
-        
-class AminoacidResidue(PdbResidue):
-    def __init__(self):
-        super().__init__()
+    def embed_molecule_fragment(self, 
+                                other: Union[PdbMolecule, "AminoacidResidue", "NucleicAcidResidue"],
+                                source_atoms: Iterable[str],
+                                embed_atoms: Iterable[str],
+                                correspondence: Iterable[Tuple[str, str]]
+                               ):
+        ...

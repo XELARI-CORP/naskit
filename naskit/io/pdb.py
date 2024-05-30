@@ -5,7 +5,8 @@ from tempfile import _TemporaryFileWrapper
 import numpy as np
 
 from ..containers.pdb.pdbAtom import PdbAtom
-from ..containers.pdb.pdbMolecule import PdbMolecule, PdbResidue, NucleicAcidResidue, AminoacidResidue
+from ..containers.pdb.pdbMolecule import PdbMolecule
+from ..containers.pdb.pdbResidue import PdbResidue, NucleicAcidResidue, AminoacidResidue
 from ..containers.pdb.pdbContainer import PDB, PDBModels, NucleicAcidChain, ProteinChain
 from ..exceptions import InvalidPDB
 

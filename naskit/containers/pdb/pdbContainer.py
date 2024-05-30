@@ -1,7 +1,8 @@
 from typing import Union, List
 import numpy as np
 from .pdbAtom import PdbAtom
-from .pdbMolecule import PdbMolecule, PdbResidue, NucleicAcidResidue, AminoacidResidue
+from .pdbMolecule import PdbMolecule
+from .pdbResidue import PdbResidue, NucleicAcidResidue, AminoacidResidue
 from ...exceptions import InvalidPDB
 
 
@@ -118,6 +119,22 @@ class NucleicAcidChain(PDBChain):
             
         super().add(residue)
         
+        
+    def to_rna(self):
+        for c in self: c.to_rna()
+        
+    def to_dna(self):
+        for c in self: c.to_dna()
+        
+    @property
+    def natype(self):
+        if all([c.natype=='rna' for c in self]):
+            return 'rna'
+        elif all([c.natype=='dna' for c in self]):
+            return 'dna'
+        else:
+            return None
+            
         
 class ProteinChain(PDBChain):
     def __init__(self):
