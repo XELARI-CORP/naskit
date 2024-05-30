@@ -55,12 +55,12 @@ class NucleicAcidResidue(PdbResidue):
             
         elif sugar=='deoxyribose':
             print('Change to deoxyribose')
-            self.embed_molecule_fragment(self, 
-                                         DEOXYRIBOSE_CORE, 
-                                         source_atoms=RIBOSE_SOURSE_ATOMS, 
-                                         embed_atoms=DEOXYRIBOSE_SOURSE_ATOMS, 
-                                         correspondence: Iterable[Tuple[str, str]]
-                                        )
+            # self.embed_molecule_fragment(self, 
+            #                              DEOXYRIBOSE_CORE, 
+            #                              source_atoms=RIBOSE_SOURSE_ATOMS, 
+            #                              embed_atoms=DEOXYRIBOSE_SOURSE_ATOMS, 
+            #                              correspondence: Iterable[Tuple[str, str]]
+            #                             )
             
         else:
             raise ValueError(f"Sugar must be 'ribose' or 'deoxyribose'. got {sugar}")

@@ -123,10 +123,10 @@ class PdbMolecule:
             self.__atoms[i].coords = coords[i]
             
             
-    def embed_molecule_fragment(self, 
-                                other: Union[PdbMolecule, "AminoacidResidue", "NucleicAcidResidue"],
-                                source_atoms: Iterable[str],
-                                embed_atoms: Iterable[str],
-                                correspondence: Iterable[Tuple[str, str]]
-                               ):
-        ...
+    # def embed_molecule_fragment(self, 
+    #                             other: Union[PdbMolecule, "AminoacidResidue", "NucleicAcidResidue"],
+    #                             source_atoms: Iterable[str],
+    #                             embed_atoms: Iterable[str],
+    #                             correspondence: Iterable[Tuple[str, str]]
+    #                            ):
+    #     ...
