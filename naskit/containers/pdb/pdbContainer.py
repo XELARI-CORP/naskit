@@ -59,6 +59,12 @@ class PDBCompounds:
                 ch = ch+1 if ch<90 else 65
                 
         
+    def atoms(self):
+        for c in self.__comps:
+            for a in c.atoms():
+                yield a
+            
+            
     @property
     def natoms(self):
         return sum([c.natoms for c in self.__comps])

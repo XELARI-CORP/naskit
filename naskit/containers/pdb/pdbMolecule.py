@@ -76,6 +76,11 @@ class PdbMolecule:
             a.atomn = initn + i
         
     
+    def atoms(self):
+        for a in self.__atoms:
+            yield a
+            
+            
     @property
     def natoms(self):
         return len(self)
