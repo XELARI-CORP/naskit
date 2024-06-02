@@ -91,7 +91,7 @@ class PDBChain(PDBCompounds):
         super().__init__()
         
     def __repr__(self):
-        return f"{self.__class__.__name__} with {len(self)} {self[0].__class__.__name__} residues at {hex(id(self))}"
+        return f"{self.__class__.__name__} with {len(self)} {self[0].__class__.__name__} at {hex(id(self))}"
     
     def __str__(self):
         return "\n".join([str(c) for c in self]) + "\nTER"

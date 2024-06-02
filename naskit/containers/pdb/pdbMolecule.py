@@ -26,6 +26,9 @@ class PdbMolecule:
     def __iter__(self):
         return iter(self.__atoms)
     
+    def __repr__(self):
+        return f"{self.name} {self.__class__.__name__} with {len(self)} atoms at {hex(id(self))}"
+    
     def __str__(self):
         return "\n".join([str(a) for a in self.__atoms])
     
