@@ -1,12 +1,13 @@
 from typing import Union, List, Iterable, Tuple
 import numpy as np
 from .pdbAtom import PdbAtom
+from .pdbDraw import PDBDraw
 from ...exceptions import InvalidPDB
 from ...utils.math3d import align
 
 
 
-class PdbMolecule:
+class PdbMolecule(PDBDraw):
     __slots__ = ("__atoms", "__name_idx_map")
     
     def __init__(self):

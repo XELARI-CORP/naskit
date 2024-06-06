@@ -3,18 +3,26 @@ import numpy as np
 from .pdbAtom import PdbAtom
 from .pdbMolecule import PdbMolecule
 from .pdbResidue import PdbResidue, NucleicAcidResidue, AminoacidResidue
+from .pdbDraw import PDBDraw
 from ...exceptions import InvalidPDB
 
 
     
-class PDBCompounds:
+class PDBCompounds(PDBDraw):
     __slots__ = ("__comps", )
     
     def __init__(self):
         self.__comps = []
         
         
-    def __getitem__(self, i: int):
+    def __getitem__(self, i: Union[int, slice]):
+        if isinstance(i, slice):
+            slice_comp = self.__class__()
+            for c in self.__comps[i]:
+                PDBCompounds.add(slice_comp, c)
+
+            return slice_comp
+            
         return self.__comps[i]
     
     def __len__(self):
