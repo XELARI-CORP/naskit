@@ -68,6 +68,25 @@ class PdbAtom:
                 f"{self.segment:<4}{self.element:>2}{charge:<2}"
                )
     
+    @property
+    def x(self):
+        return self.coords[0]
+    
+    @property
+    def y(self):
+        return self.coords[1]
+    
+    @property
+    def z(self):
+        return self.coords[2]
+    
+    def copy(self):
+        return self.__class__(is_hetatm=self.is_hetatm, atomn=self.atomn, name=self.name, altloc=self.altloc,
+                              mol_name=self.mol_name, chain=self.chain, moln=self.moln,
+                              insert_code=self.insert_code, x=self.x, y=self.y, z=self.z,
+                              occupancy=self.occupancy, temp=self.temp,
+                              segment=self.segment, element=self.element, charge=self.charge)
+    
     @staticmethod
     def _default_element_derive_func(is_hetatm: bool, name: str, mol_name: str, chain: str):
         return name[0]

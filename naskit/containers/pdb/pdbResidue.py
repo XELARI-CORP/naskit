@@ -50,20 +50,18 @@ class NucleicAcidResidue(PdbResidue):
             
             
     def change_sugar(self, sugar: str):
-        if sugar=='ribose':
+        if sugar=='ribose' or sugar=='rna':
             print('Change to ribose')
             
-        elif sugar=='deoxyribose':
+        elif sugar=='deoxyribose' or sugar=='dna':
             print('Change to deoxyribose')
-            # self.embed_molecule_fragment(self, 
-            #                              DEOXYRIBOSE_CORE, 
-            #                              source_atoms=RIBOSE_SOURSE_ATOMS, 
-            #                              embed_atoms=DEOXYRIBOSE_SOURSE_ATOMS, 
-            #                              correspondence: Iterable[Tuple[str, str]]
-            #                             )
+            self.embed_molecule_fragment(DEOXYRIBOSE_CORE, 
+                                         source_atoms=RIBOSE_SOURSE_ATOMS, 
+                                         embed_atoms=DEOXYRIBOSE_SOURSE_ATOMS, 
+                                         correspondence=RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS)
             
         else:
-            raise ValueError(f"Sugar must be 'ribose' or 'deoxyribose'. got {sugar}")
+            raise ValueError(f"Sugar must be 'ribose', 'rna' or 'deoxyribose', 'dna'. got {sugar}")
             
     def change_nucleobase(self, base: str):
         print(f'Change from {self.name} to {base}')
@@ -73,6 +71,7 @@ class NucleicAcidResidue(PdbResidue):
 
 RIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "H4'", "H3'", "H2'", "HO2'", "H1'")
 DEOXYRIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "H4'", "H3'", "H2'", "H2''", "H1'")
+RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS = (("C1'", "C1'"), ("C4'", "C4'"), ("O4'", "O4'"))
 
 deoxyribose_lines = """\
 ATOM      1  C4'  DG A   1      -0.209   0.437   1.353  1.00  0.00           C  

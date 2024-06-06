@@ -1,7 +1,8 @@
-from typing import Union, List, Iterable
+from typing import Union, List, Iterable, Tuple
 import numpy as np
 from .pdbAtom import PdbAtom
 from ...exceptions import InvalidPDB
+from ...utils.math3d import align
 
 
 
@@ -32,9 +33,16 @@ class PdbMolecule:
     def __str__(self):
         return "\n".join([str(a) for a in self.__atoms])
     
+    
+    def copy(self):
+        copied_mol = self.__class__()
+        for a in self.__atoms:
+            copied_mol.add_atom(a.copy(), skip_validation=True)
         
-    def add_atom(self, atom: PdbAtom):
-        if len(self.__atoms):
+        return copied_mol
+        
+    def add_atom(self, atom: PdbAtom, skip_validation: bool = False):
+        if len(self.__atoms) and (not skip_validation):
             if self.__name_idx_map.get(atom.name) is not None:
                 raise InvalidPDB(f"Atom ({atom.atomn}) with name {atom.name} "
                                  f"already exists in molecule.")
@@ -73,12 +81,10 @@ class PdbMolecule:
             raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
         self._remap()
         
-        
     def renum_atoms(self, initn: int = 1):
         for i, a in enumerate(self.__atoms):
             a.atomn = initn + i
         
-    
     def atoms(self):
         for a in self.__atoms:
             yield a
@@ -131,10 +137,46 @@ class PdbMolecule:
             self.__atoms[i].coords = coords[i]
             
             
-    # def embed_molecule_fragment(self, 
-    #                             other: Union[PdbMolecule, "AminoacidResidue", "NucleicAcidResidue"],
-    #                             source_atoms: Iterable[str],
-    #                             embed_atoms: Iterable[str],
-    #                             correspondence: Iterable[Tuple[str, str]]
-    #                            ):
-    #     ...
+    def embed_molecule_fragment(self, 
+                                other: Union["PdbMolecule", "AminoacidResidue", "NucleicAcidResidue"],
+                                source_atoms: Iterable[str],
+                                embed_atoms: Iterable[str],
+                                correspondence: Iterable[Tuple[str, str]]
+                               ):
+        """
+        Substitutes source atoms of molecule to embed atoms of other molecule.
+        Other molecule is aligned by pairs of atoms provided in correspondence.
+        
+        :param other: aligned structure
+        :param source_atoms: atoms to be deleted
+        :param embed_atoms: atoms to be embedded
+        :param correspondence: pairs of indices (ai, bi) for aligning
+        """
+        other = other.copy()
+        
+        coridx = []
+        for a1, a2 in correspondence:
+            i = self.get_atom_idx(a1)
+            j = other.get_atom_idx(a2)
+            if i is None:
+                raise KeyError(f"Target molecule do not have {a1} atom.")
+            if j is None:
+                raise KeyError(f"Embedded fragment do not have {a1} atom.")
+            
+            coridx.append((i,j))
+            
+        print(f"Align by pairs: {coridx}")
+        other.coords = align(self.coords, other.coords, coridx)
+        other.moln = self.moln
+        other.name = self.name
+        other.chain = self.chain
+        
+        print(f"Delete source atoms: {source_atoms}")
+        for aname in source_atoms:
+            self.delete_atom(aname)
+        
+        print(f"Embed atoms: {embed_atoms}")
+        for aname in embed_atoms:
+            a = other.get_atom(aname)
+            self.add_atom(a)
+        

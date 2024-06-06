@@ -27,11 +27,17 @@ class PDBCompounds:
         return "\n".join([str(c) for c in self])
         
         
+    def copy(self):
+        copied_comp = self.__class__()
+        for c in self.__comps:
+            copied_comp.add(c.copy())
+        
+        return copied_comp
+    
     def add(self, compound: Union[PdbMolecule, 
                                   NucleicAcidResidue, AminoacidResidue, 
                                   "NucleicAcidChain", "ProteinChain"]):   
-        self.__comps.append(compound)
-        
+        self.__comps.append(compound)    
         
     def renum_atoms(self, initn: int = 1):
         offset = 0
