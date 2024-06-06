@@ -51,10 +51,12 @@ class NucleicAcidResidue(PdbResidue):
             
     def change_sugar(self, sugar: str):
         if sugar=='ribose' or sugar=='rna':
-            print('Change to ribose')
+            self.embed_molecule_fragment(RIBOSE_CORE,
+                                         source_atoms=DEOXYRIBOSE_SOURSE_ATOMS,
+                                         embed_atoms=RIBOSE_SOURSE_ATOMS,
+                                         correspondence=RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS)
             
         elif sugar=='deoxyribose' or sugar=='dna':
-            print('Change to deoxyribose')
             self.embed_molecule_fragment(DEOXYRIBOSE_CORE, 
                                          source_atoms=RIBOSE_SOURSE_ATOMS, 
                                          embed_atoms=DEOXYRIBOSE_SOURSE_ATOMS, 

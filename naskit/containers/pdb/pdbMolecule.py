@@ -155,28 +155,24 @@ class PdbMolecule(PDBDraw):
         """
         other = other.copy()
         
-        coridx = []
+        aidx, bidx = [], []
         for a1, a2 in correspondence:
-            i = self.get_atom_idx(a1)
-            j = other.get_atom_idx(a2)
-            if i is None:
-                raise KeyError(f"Target molecule do not have {a1} atom.")
-            if j is None:
-                raise KeyError(f"Embedded fragment do not have {a1} atom.")
+            if (i:=self.get_atom_idx(a1)) is None:
+                raise KeyError(f"Target molecule does not have {a1} atom.")
+            if (j:=other.get_atom_idx(a2)) is None:
+                raise KeyError(f"Embedded fragment does not have {a2} atom.")
             
-            coridx.append((i,j))
+            aidx.append(i)
+            bidx.append(j)
             
-        print(f"Align by pairs: {coridx}")
-        other.coords = align(self.coords, other.coords, coridx)
+        other.coords = align(self.coords, other.coords, aidx, bidx)
         other.moln = self.moln
         other.name = self.name
         other.chain = self.chain
         
-        print(f"Delete source atoms: {source_atoms}")
         for aname in source_atoms:
             self.delete_atom(aname)
         
-        print(f"Embed atoms: {embed_atoms}")
         for aname in embed_atoms:
             a = other.get_atom(aname)
             self.add_atom(a)
