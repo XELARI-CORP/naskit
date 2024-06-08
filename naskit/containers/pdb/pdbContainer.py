@@ -38,7 +38,7 @@ class PDBCompounds(PDBDraw):
     def copy(self):
         copied_comp = self.__class__()
         for c in self.__comps:
-            copied_comp.add(c.copy())
+            PDBCompounds.add(copied_comp, c.copy())
         
         return copied_comp
     

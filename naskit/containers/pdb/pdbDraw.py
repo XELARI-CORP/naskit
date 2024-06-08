@@ -6,8 +6,8 @@ class PDBDraw:
     atom_colors_map = {"C":'#1D90DE', "H":"#BCC5E0", "S":"#E0D86B", "O":"#DE371D", "N":"#1DDE81", "P":"#DC8BE0"}
     atom_radius_map = {"C":0.67, "H":0.53, "S":0.88, "O":0.48, "N":0.56, "P":0.98}
     
-    def marker_size_multiplier(self, natoms):
-        return 100*np.exp(- (2.e-2*(natoms-12))**.5) + 10
+    def _marker_size_multiplier(self, natoms):
+        return 100*np.exp(-(2.e-2*natoms)**.5) + 10
         
     def draw(
             self,
@@ -20,7 +20,7 @@ class PDBDraw:
         import plotly.graph_objects as go
         
         if size_m is None:
-            size_m = self.marker_size_multiplier(self.natoms)
+            size_m = self._marker_size_multiplier(self.natoms)
             
         c = self.coords
         color = [self.atom_colors_map[a.element] for a in self.atoms()]
