@@ -151,7 +151,7 @@ class PdbMolecule(PDBDraw):
         :param other: aligned structure
         :param source_atoms: atoms to be deleted
         :param embed_atoms: atoms to be embedded
-        :param correspondence: pairs of indices (ai, bi) for aligning
+        :param correspondence: pairs of indices (ai, bi) for aligning, ai - changed molecule, bi - embedded
         """
         other = other.copy()
         
