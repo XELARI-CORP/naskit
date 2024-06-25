@@ -80,11 +80,16 @@ class NucleicAcidResidue(PdbResidue):
         self_type = NAME_BASE_TYPE_MAP[self.name]
         other_type = NAME_BASE_TYPE_MAP[base]
         correspondence = BASE_CORESPONDANCE_MAP[f"{self_type}-{other_type}"]
+        source_origin_atom = BASE_ORIGIN_ATOM_MAP[self.name]
+        embed_origin_atom = BASE_ORIGIN_ATOM_MAP[base]
         
         self.embed_molecule_fragment(new_mol,
                                      source_atoms=source_atoms, 
                                      embed_atoms=embed_atoms, 
-                                     correspondence=correspondence)
+                                     correspondence=correspondence,
+                                     source_origin_atom=source_origin_atom,
+                                     embed_origin_atom=embed_origin_atom
+                                    )
         
         
 # TEMPLATES
@@ -132,6 +137,8 @@ BASE_CORESPONDANCE_MAP = {
     "Pyrimidine-Purine": PYRIMIDINE_TO_PURINE_CORE_CORESPONDANCE,
     "Purine-Pyrimidine": tuple([(b, a) for a, b in PYRIMIDINE_TO_PURINE_CORE_CORESPONDANCE])
                          }
+
+BASE_ORIGIN_ATOM_MAP = {"C":"N1", "U":"N1", "T":"N1", "A":"N9", "G":"N9"}
 
 # Pyrimidine
 

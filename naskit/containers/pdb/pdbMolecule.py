@@ -142,7 +142,9 @@ class PdbMolecule(PDBDraw):
                                 other: Union["PdbMolecule", "AminoacidResidue", "NucleicAcidResidue"],
                                 source_atoms: Iterable[str],
                                 embed_atoms: Iterable[str],
-                                correspondence: Iterable[Tuple[str, str]]
+                                correspondence: Iterable[Tuple[str, str]],
+                                source_origin_atom: str = None,
+                                embed_origin_atom: str = None
                                ):
         """
         Substitutes source atoms of molecule to embed atoms of other molecule.
@@ -152,6 +154,8 @@ class PdbMolecule(PDBDraw):
         :param source_atoms: atoms to be deleted
         :param embed_atoms: atoms to be embedded
         :param correspondence: pairs of indices (ai, bi) for aligning, ai - changed molecule, bi - embedded
+        :param source_origin_atom: name of source molecule's atom which coordinates will be used for origin shift
+        :param embed_origin_atom: name of embed molecule's atom which coordinates will be used for origin shift
         """
         other = other.copy()
         
@@ -165,7 +169,12 @@ class PdbMolecule(PDBDraw):
             aidx.append(i)
             bidx.append(j)
             
-        other.coords = align(self.coords, other.coords, aidx, bidx)
+        source_origin_idx = None if (source_origin_atom is None) else self.get_atom_idx(source_origin_atom)
+        embed_origin_idx = None if (embed_origin_atom is None) else other.get_atom_idx(embed_origin_atom)
+            
+        other.coords = align(self.coords, other.coords, 
+                             aidx, bidx,
+                             source_origin_idx, embed_origin_idx)
         other.moln = self.moln
         other.name = self.name
         other.chain = self.chain
