@@ -45,8 +45,8 @@ class PdbMolecule(PDBDraw):
     def add_atom(self, atom: PdbAtom, skip_validation: bool = False):
         if len(self.__atoms) and (not skip_validation):
             if self.__name_idx_map.get(atom.name) is not None:
-                raise InvalidPDB(f"Atom ({atom.atomn}) with name {atom.name} "
-                                 f"already exists in molecule.")
+                raise InvalidPDB(f"Atom (number {atom.atomn}) with name {atom.name} "
+                                 f"is already in molecule {self.name} (number {self.moln}).")
             
             a = self.__atoms[0]
             if atom.mol_name!=a.mol_name:
