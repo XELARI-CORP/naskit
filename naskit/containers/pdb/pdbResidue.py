@@ -1,9 +1,9 @@
 from typing import Union, List
-import importlib.resources
 import numpy as np
 from .pdbAtom import PdbAtom
 from .pdbMolecule import PdbMolecule
 from ...exceptions import InvalidPDB
+from ...utils.package_resources import get_package_path
 
 
 
@@ -93,8 +93,7 @@ class NucleicAcidResidue(PdbResidue):
         
         
 # TEMPLATES
-
-PACKAGE_PATH = importlib.resources.files('naskit')
+PACKAGE_PATH = get_package_path()
 
 ## SUGARE
 
