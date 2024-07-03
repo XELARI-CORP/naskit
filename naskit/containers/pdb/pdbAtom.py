@@ -49,7 +49,7 @@ class PdbAtom:
             name = self.name.ljust(4, ' ')
             
         mol_name = f"{self.mol_name:>3}".ljust(4)
-        moln = f"{self.moln:>4}".ljust(4)
+        moln = f"{self.moln:>4}".ljust(5)
         
         occupancy = f"{self.occupancy:>6.2f}" if isinstance(self.occupancy, float) else " "*6
         temp = f"{self.temp:>6.2f}" if isinstance(self.temp, float) else " "*6
@@ -64,8 +64,7 @@ class PdbAtom:
                 f"{mol_name}{self.chain}{moln}   "
                 f"{self.coords[0]:>8.3f}{self.coords[1]:>8.3f}{self.coords[2]:>8.3f}"
                 f"{occupancy}{temp}      "
-                f"{self.segment:<4}{self.element:>2}{charge:<2}"
-               )
+                f"{self.segment:<4}{self.element:>2}{charge:<2}")
     
     @property
     def x(self):
@@ -85,6 +84,13 @@ class PdbAtom:
                               x=self.x, y=self.y, z=self.z,
                               occupancy=self.occupancy, temp=self.temp,
                               segment=self.segment, element=self.element, charge=self.charge)
+    
+    def as_dict(self):
+        return dict(is_hetatm=self.is_hetatm, atomn=self.atomn, name=self.name, altloc=self.altloc,
+                      mol_name=self.mol_name, chain=self.chain, moln=self.moln,
+                      coords=self.coords,
+                      occupancy=self.occupancy, temp=self.temp,
+                      segment=self.segment, element=self.element, charge=self.charge)
     
     @staticmethod
     def _default_element_derive_func(is_hetatm: bool, name: str, mol_name: str, chain: str):

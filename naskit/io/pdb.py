@@ -19,8 +19,9 @@ AMINOACID_NAMES = {'ALA', 'CYS', 'ASP', 'GLU',
                    'PHE', 'GLY', 'ILE', 'LYS', 
                    'LEU', 'MET', 'PRO', 'GLN', 
                    'ARG', 'SER', 'THR', 'VAL', 
-                   'TRP', 'TYR', 'ASH',  'ASN', 
-                   'HID', 'HIE', 'HIP', 'HIS'}
+                   'TRP', 'TYR', 'ASH', 'ASN', 
+                   'HIS', 'HID', 'HIE', 'HIP',
+                          'HSD', 'HSE', 'HSP'}
 
 
 class pdbRead:
@@ -172,7 +173,7 @@ class pdbRead:
         chain_mols = []
         reset_chain = True
         
-        for m in mol_tokens:
+        for i, m in enumerate(mol_tokens):
             if isinstance(m, (NucleicAcidResidue, AminoacidResidue)):
                 if reset_chain:
                     cur_chain = m.chain
@@ -193,11 +194,14 @@ class pdbRead:
                 chains.append(m)
                 
             else: # TER
-                if len(chain_mols)==0:
-                    raise InvalidPDB(f"PDB contains empty chain at ({m}).")
-                    
-                chains.append(self.make_chain(chain_mols))
-                chain_mols = []
+                if i==0:
+                    raise InvalidPDB(f"TER on first line.")
+                elif isinstance(mol_tokens[i-1], str) and mol_tokens[i-1].startswith("TER"):
+                    raise InvalidPDB(f"Two TERs in a row.")
+                
+                if len(chain_mols)!=0:
+                    chains.append(self.make_chain(chain_mols))
+                    chain_mols = []
                 reset_chain = True
                 
         if len(chain_mols):

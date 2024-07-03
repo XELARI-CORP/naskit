@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Tuple, Iterable
 import numpy as np
 from .pdbAtom import PdbAtom
 from .pdbMolecule import PdbMolecule
@@ -27,6 +27,10 @@ class NucleicAcidResidue(PdbResidue):
         return "dna" if "D" in self.name else "rna"
     
     
+    def is_protonated(self):
+        return any([a.element=='H' for a in self.atoms()])
+        
+    
     def to_rna(self):
         if self.natype=='rna':
             return
@@ -52,16 +56,16 @@ class NucleicAcidResidue(PdbResidue):
             
     def change_sugar(self, sugar: str):
         if sugar=='ribose' or sugar=='rna':
-            self.embed_molecule_fragment(RIBOSE_CORE,
-                                         source_atoms=DEOXYRIBOSE_SOURSE_ATOMS,
-                                         embed_atoms=RIBOSE_SOURSE_ATOMS,
-                                         correspondence=RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS)
+            self._embed_fragment_with_hydrogen_check(RIBOSE_CORE,
+                                                     source_atoms=DEOXYRIBOSE_SOURSE_ATOMS,
+                                                     embed_atoms=RIBOSE_SOURSE_ATOMS,
+                                                     correspondence=RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS)
             
         elif sugar=='deoxyribose' or sugar=='dna':
-            self.embed_molecule_fragment(DEOXYRIBOSE_CORE, 
-                                         source_atoms=RIBOSE_SOURSE_ATOMS, 
-                                         embed_atoms=DEOXYRIBOSE_SOURSE_ATOMS, 
-                                         correspondence=RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS)
+            self._embed_fragment_with_hydrogen_check(DEOXYRIBOSE_CORE, 
+                                                     source_atoms=RIBOSE_SOURSE_ATOMS, 
+                                                     embed_atoms=DEOXYRIBOSE_SOURSE_ATOMS, 
+                                                     correspondence=RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS)
             
         else:
             raise ValueError(f"Sugar must be 'ribose', 'rna' or 'deoxyribose', 'dna'. got {sugar}")
@@ -74,22 +78,38 @@ class NucleicAcidResidue(PdbResidue):
         if new_mol is None:
             raise ValueError(f"Expected base name A, G, C, U, T, got {base}.")
             
-        source_atoms = BASE_NAME_SOURCE_ATOMS_MAP.get(self.name)
+        source_atoms = BASE_NAME_SOURCE_ATOMS_MAP.get(self.name[-1])
         embed_atoms = BASE_NAME_SOURCE_ATOMS_MAP.get(base)
         
-        self_type = NAME_BASE_TYPE_MAP[self.name]
+        self_type = NAME_BASE_TYPE_MAP[self.name[-1]]
         other_type = NAME_BASE_TYPE_MAP[base]
         correspondence = BASE_CORESPONDANCE_MAP[f"{self_type}-{other_type}"]
-        source_origin_atom = BASE_ORIGIN_ATOM_MAP[self.name]
+        source_origin_atom = BASE_ORIGIN_ATOM_MAP[self.name[-1]]
         embed_origin_atom = BASE_ORIGIN_ATOM_MAP[base]
         
-        self.embed_molecule_fragment(new_mol,
-                                     source_atoms=source_atoms, 
-                                     embed_atoms=embed_atoms, 
-                                     correspondence=correspondence,
-                                     source_origin_atom=source_origin_atom,
-                                     embed_origin_atom=embed_origin_atom
-                                    )
+        self._embed_fragment_with_hydrogen_check(new_mol,
+                                                 source_atoms=source_atoms, 
+                                                 embed_atoms=embed_atoms, 
+                                                 correspondence=correspondence,
+                                                 source_origin_atom=source_origin_atom,
+                                                 embed_origin_atom=embed_origin_atom
+                                                )
+        
+    def _embed_fragment_with_hydrogen_check(self, 
+                                            other: Union["PdbMolecule", "AminoacidResidue", "NucleicAcidResidue"],
+                                            source_atoms: Iterable[str],
+                                            embed_atoms: Iterable[str],
+                                            correspondence: Iterable[Tuple[str, str]],
+                                            source_origin_atom: str = None,
+                                            embed_origin_atom: str = None
+                                           ):
+        
+        was_protonated = self.is_protonated()
+        self.embed_molecule_fragment(other, source_atoms, embed_atoms, correspondence, source_origin_atom, embed_origin_atom)
+        if not was_protonated:
+            h_atoms = [a.name for a in self.atoms() if a.element=='H']
+            for h_atom in h_atoms:
+                self.delete_atom(h_atom)
         
         
 # TEMPLATES
