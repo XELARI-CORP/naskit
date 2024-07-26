@@ -29,6 +29,32 @@ class NucleicAcidResidue(PdbResidue):
     
     def is_protonated(self):
         return any([a.element=='H' for a in self.atoms()])
+
+    
+    def _add_atom_on_axis(self, dira1: str, dira2: str, aname: str, bond_len: float):
+        ac = self[dira2].copy()
+        
+        bondv = self[dira2].coords - self[dira1].coords
+        bondv = bondv/np.linalg.norm(bondv)
+        
+        ac.coords = self[dira2].coords + bond_len*bondv
+        ac.element = aname[0]
+        ac.name = aname
+        ac.atomn = 1 + max([a.atomn for a in self])
+        self.add_atom(ac)
+        
+    
+    def fill3end(self):
+        if "HO3'" not in self:
+            self._add_atom_on_axis("C3'", "O3'", "HO3'", 0.96)
+
+    
+    def fill5end(self):
+        if 'P' in self:
+            self._add_atom_on_axis("O5'", "P", "OP3", 1.6097)
+            self._add_atom_on_axis("P", "OP3", "HOP3", 0.96)
+        elif "HO5'" not in self:
+            self._add_atom_on_axis("C5'", "O5'", "HO5'", 0.96)
         
     
     def to_rna(self):
@@ -74,7 +100,7 @@ class NucleicAcidResidue(PdbResidue):
         if base==self.name.lstrip("D"):
             return
         
-        new_mol = BASE_NAME_CONTAINER_MAP.get(base)
+        new_mol = NT_TEMPLATE_MAP.get(base)
         if new_mol is None:
             raise ValueError(f"Expected base name A, G, C, U, T, got {base}.")
             
@@ -158,34 +184,23 @@ BASE_CORESPONDANCE_MAP = {
                          }
 
 BASE_ORIGIN_ATOM_MAP = {"C":"N1", "U":"N1", "T":"N1", "A":"N9", "G":"N9"}
-
-# Pyrimidine
-
-THYMINE_NB = NucleicAcidResidue()
-with open(PACKAGE_PATH/"resources"/"pdb"/"thymine.pdb") as f:
-    for l in f:
-        THYMINE_NB.add_atom(PdbAtom.from_pdb_line(l))
-
-URACIL_NB = NucleicAcidResidue()
-with open(PACKAGE_PATH/"resources"/"pdb"/"uracil.pdb") as f:
-    for l in f:
-        URACIL_NB.add_atom(PdbAtom.from_pdb_line(l))
         
-CYTOSINE_NB = NucleicAcidResidue()
-with open(PACKAGE_PATH/"resources"/"pdb"/"cytosine.pdb") as f:
-    for l in f:
-        CYTOSINE_NB.add_atom(PdbAtom.from_pdb_line(l))
-        
-# Purine
+NT_TEMPLATE_MAP = {}
+for nt_name, pdb_name in zip(["A", "G", "C", "U", "T"], 
+                             ["adenine.pdb", "guanine.pdb", # Purine
+                              "cytosine.pdb", "uracil.pdb", "thymine.pdb"] # Pyrimidine
+                            ):
+    
+    with open(PACKAGE_PATH/"resources"/"pdb"/pdb_name) as f:
+        NT = NucleicAcidResidue()
+        for l in f:
+            NT.add_atom(PdbAtom.from_pdb_line(l))
 
-ADENINE_NB = NucleicAcidResidue()
-with open(PACKAGE_PATH/"resources"/"pdb"/"adenine.pdb") as f:
-    for l in f:
-        ADENINE_NB.add_atom(PdbAtom.from_pdb_line(l))
-        
-GUANINE_NB = NucleicAcidResidue()
-with open(PACKAGE_PATH/"resources"/"pdb"/"guanine.pdb") as f:
-    for l in f:
-        GUANINE_NB.add_atom(PdbAtom.from_pdb_line(l))
-        
-BASE_NAME_CONTAINER_MAP = {"A":ADENINE_NB, "G":GUANINE_NB, "C":CYTOSINE_NB, "U":URACIL_NB, "T":THYMINE_NB}
+        NT_TEMPLATE_MAP[nt_name] = NT
+
+
+
+
+
+
+

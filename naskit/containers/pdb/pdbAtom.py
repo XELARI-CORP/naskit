@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Union
 from ...exceptions import InvalidPDB
 
 
@@ -91,6 +92,11 @@ class PdbAtom:
                       coords=self.coords,
                       occupancy=self.occupancy, temp=self.temp,
                       segment=self.segment, element=self.element, charge=self.charge)
+
+    def dist(self, a: Union["PdbAtom", "PdbMolecule"]):
+        if len(a.coords.shape)==1:
+            return np.linalg.norm(a.coords - self.coords)
+        return np.linalg.norm((a.coords - self.coords), axis=1)
     
     @staticmethod
     def _default_element_derive_func(is_hetatm: bool, name: str, mol_name: str, chain: str):

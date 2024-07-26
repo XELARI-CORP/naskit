@@ -41,6 +41,11 @@ class PDBCompounds(PDBDraw):
             PDBCompounds.add(copied_comp, c.copy())
         
         return copied_comp
+
+    def dist(self, a: Union["PdbAtom", "PdbMolecule", "PDBCompounds"]):
+        if len(a.coords.shape)==1:
+            return np.linalg.norm((self.coords - a.coords), axis=1)
+        return np.linalg.norm((self.coords[:, np.newaxis, :] - a.coords), axis=2)
     
     def add(self, compound: Union[PdbMolecule, 
                                   NucleicAcidResidue, AminoacidResidue, 

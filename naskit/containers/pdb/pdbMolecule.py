@@ -19,11 +19,19 @@ class PdbMolecule(PDBDraw):
         self.__name_idx_map = {atom.name:i for i, atom in enumerate(self.__atoms)}
         
         
-    def __getitem__(self, i: int):
-        return self.__atoms[i]
+    def __getitem__(self, i: Union[int, str]):
+        if isinstance(i, int):
+            return self.__atoms[i]
+        elif isinstance(i, str):
+            return self.__atoms[self.__name_idx_map[i]]
+        else:
+            raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
     
     def __len__(self):
         return len(self.__atoms)
+
+    def __contains__(self, atom_name: str):
+        return self.__name_idx_map.get(atom_name) is not None
     
     def __iter__(self):
         return iter(self.__atoms)
@@ -41,6 +49,11 @@ class PdbMolecule(PDBDraw):
             copied_mol.add_atom(a.copy(), skip_validation=True)
         
         return copied_mol
+
+    def dist(self, a: Union["PdbAtom", "PdbMolecule"]):
+        if len(a.coords.shape)==1:
+            return np.linalg.norm((self.coords - a.coords), axis=1)
+        return np.linalg.norm((self.coords[:, np.newaxis, :] - a.coords), axis=2)
         
     def add_atom(self, atom: PdbAtom, skip_validation: bool = False):
         if len(self.__atoms) and (not skip_validation):
@@ -65,14 +78,6 @@ class PdbMolecule(PDBDraw):
     def get_atom_idx(self, name: str):
         return self.__name_idx_map.get(name)
     
-    def get_atom(self, i: Union[int, str]):
-        if isinstance(i, int):
-            return self.__atoms[i]
-        elif isinstance(i, str):
-            return self.__atoms[self.__name_idx_map[i]]
-        else:
-            raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
-            
     def delete_atom(self, i: Union[int, str]):
         if isinstance(i, int):
             self.__atoms.pop(i)
@@ -184,6 +189,6 @@ class PdbMolecule(PDBDraw):
                 self.delete_atom(aname)
         
         for aname in embed_atoms:
-            a = other.get_atom(aname)
+            a = other[aname]
             self.add_atom(a)
         
