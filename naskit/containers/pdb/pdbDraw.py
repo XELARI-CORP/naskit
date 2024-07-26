@@ -4,7 +4,7 @@ import numpy as np
 
 class PDBDraw:
     atom_colors_map = {"C":'#1D90DE', "H":"#BCC5E0", "S":"#E0D86B", "O":"#DE371D", "N":"#1DDE81", "P":"#DC8BE0"}
-    default_color = "111"
+    default_color = "#111"
     atom_radius_map = {"C":0.67, "H":0.53, "S":0.88, "O":0.48, "N":0.56, "P":0.98}
     default_radius = 0.75
     

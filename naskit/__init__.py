@@ -10,7 +10,7 @@ from . import metrics
 
 
 __all__ = ["NA", "NucleicAcid",
-           "containers", 
+           "containers",
            "dotLinesRead", "dotLinesWrite",
            "dotRead", "dotWrite", 
            "fastaRead", "fastaWrite",

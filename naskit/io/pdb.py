@@ -1,7 +1,9 @@
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Optional
 from pathlib import Path
 from io import TextIOWrapper
 from tempfile import _TemporaryFileWrapper
+import urllib
+import tempfile
 import numpy as np
 
 from ..containers.pdb.pdbAtom import PdbAtom
@@ -275,3 +277,27 @@ class pdbWrite:
             self._file.write(data.header + "\n")
         
         self._file.write(str(data))
+
+
+def request_pdb(pdb_id: str, 
+                save_path: Optional[str] = None, 
+                **kwargs
+               ) -> PDB:
+    
+    req = urllib.request.Request(f"https://files.rcsb.org/download/{pdb_id.upper()}.pdb")
+    with urllib.request.urlopen(req) as response:
+       txt = response.read().decode()
+
+    if save_path is not None:
+        with open(save_path, 'w') as f:
+            f.write(txt)
+        
+    fp = tempfile.TemporaryFile('w+')
+    fp.write(txt)
+    fp.seek(0)
+
+    with pdbRead(fp) as f:
+        pdb = f.read(**kwargs)
+    
+    return pdb
+    
