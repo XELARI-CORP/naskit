@@ -185,6 +185,22 @@ class ProteinChain(PDBChain):
 class PDB(PDBCompounds):
     def __init__(self):
         super().__init__()
+
+    @property
+    def chains(self):
+        return [c for c in self if isinstance(c, (NucleicAcidChain, ProteinChain))]
+
+    @property
+    def na_chains(self):
+        return [c for c in self if isinstance(c, NucleicAcidChain)]
+
+    @property
+    def prot_chains(self):
+        return [c for c in self if isinstance(c, ProteinChain)]
+
+    @property
+    def ligands(self):
+        return [c for c in self if isinstance(c, PdbMolecule)]
         
     def __repr__(self):
         s = [f"PDB at {hex(id(self))}"]
