@@ -19,13 +19,26 @@ class PdbMolecule(PDBDraw):
         self.__name_idx_map = {atom.name:i for i, atom in enumerate(self.__atoms)}
         
         
-    def __getitem__(self, i: Union[int, str]):
+    def __getitem__(self, i: Union[int, str, list, tuple]):
         if isinstance(i, int):
             return self.__atoms[i]
+            
         elif isinstance(i, str):
             return self.__atoms[self.__name_idx_map[i]]
+
+        elif isinstance(i, (list, tuple)):
+            if not all([isinstance(j, (int, str)) for j in i]):
+                raise IndexError(f"Expected all indices to be int index or string name.")
+
+            submol = self.__class__()
+            for j in i:
+                PdbMolecule.add_atom(submol, self[j])
+            
+            return submol
+            
         else:
-            raise IndexError(f"Invalid argument of type {type(i)}, accepted: int index or str name.")
+            raise IndexError(f"Expected int index, string name or lits/tuple of these types got {type(i)}.")
+
     
     def __len__(self):
         return len(self.__atoms)

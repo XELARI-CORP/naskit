@@ -16,15 +16,24 @@ class PDBCompounds(PDBDraw):
         self.__comps = []
         
         
-    def __getitem__(self, i: Union[int, slice]):
-        if isinstance(i, slice):
-            slice_comp = self.__class__()
+    def __getitem__(self, i: Union[int, slice, list, tuple]):
+        if isinstance(i, int):
+            return self.__comps[i]
+
+        slice_comp = self.__class__()
+        if isinstance(i, slice):    
             for c in self.__comps[i]:
                 PDBCompounds.add(slice_comp, c)
 
-            return slice_comp
-            
-        return self.__comps[i]
+        elif isinstance(i, (list, tuple)):
+            for idx in i:
+                PDBCompounds.add(slice_comp, self.__comps[idx])
+
+        else:
+            raise IndexError(f"Expected int index, slice or list of indices, got {type(i)}.")
+
+        return slice_comp
+        
     
     def __len__(self):
         return len(self.__comps)
