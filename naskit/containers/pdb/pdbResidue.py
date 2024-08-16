@@ -30,6 +30,23 @@ class NucleicAcidResidue(PdbResidue):
     def is_protonated(self):
         return any([a.element=='H' for a in self.atoms()])
 
+
+    def is_purine(self) -> bool:
+        return self.name.lstrip("D") in "AG" and all([a in self for a in PURINE_CORE_ATOMS])
+
+    def is_pyrimidine(self) -> bool:
+        return self.name.lstrip("D") in "CUT" and all([a in self for a in PYRIMIDINE_CORE_ATOMS])
+
+    def base_normal_vec(self):
+        anames = ("N9", "C4", "C8") if self.is_purine() else ("N1", "C2", "C6")
+        o, a, b = [self[aname] for aname in anames]
+        
+        v1 = a.coords-o.coords 
+        v2 = b.coords-o.coords
+        n = np.cross(v1, v2)
+        n /= np.linalg.norm(n)
+        return n
+
     
     def _add_atom_on_axis(self, dira1: str, dira2: str, aname: str, bond_len: float):
         ac = self[dira2].copy()
@@ -159,17 +176,17 @@ with open(PACKAGE_PATH/"resources"/"pdb"/"ribose.pdb") as f:
         
 ## BASE
 
-BASE_NAME_SOURCE_ATOMS_MAP = {
-    "A":("N9", "C8", "N7", "C5", "C6", "N6", "N1", "C2", "N3", "C4", "H8", "H61", "H62", "H2"), 
-    "G":("N9", "C8", "N7", "C5", "C6", "O6", "N1", "C2", "N2", "N3", "C4", "H8", "H1", "H21", "H22"), 
-    "C":("N1", "C2", "O2", "N3", "C4", "N4", "C5", "C6", "H41", "H42", "H5", "H6"), 
-    "U":("N1", "C2", "O2", "N3", "C4", "O4", "C5", "C6", "H3", "H5", "H6"), 
-    "T":("N1", "C2", "O2", "N3", "C4", "O4", "C5", "C7", "C6", "H3", "H71", "H72", "H73", "H6")
-                             }
-
 PYRIMIDINE_CORE_ATOMS = ("N1", "C2", "N3", "C4", "C5", "C6")
 PURINE_CORE_ATOMS = ("N9", "C8", "N7", "C5", "C6", "N1", "C2", "N3", "C4")
 PYRIMIDINE_TO_PURINE_CORE_CORESPONDANCE = (("N1", "N9"), ("C2", "C4"), ("C6", "C8"))
+
+BASE_NAME_SOURCE_ATOMS_MAP = {
+    "A": PURINE_CORE_ATOMS + ("N6", "H8", "H61", "H62", "H2"), 
+    "G": PURINE_CORE_ATOMS + ("O6", "N2", "H8", "H1", "H21", "H22"), 
+    "C": PYRIMIDINE_CORE_ATOMS + ("O2", "N4", "H41", "H42", "H5", "H6"), 
+    "U": PYRIMIDINE_CORE_ATOMS + ("O2", "O4", "H3", "H5", "H6"), 
+    "T": PYRIMIDINE_CORE_ATOMS + ("O2", "O4", "C7", "H3", "H71", "H72", "H73", "H6")
+                             }
 
 NAME_BASE_TYPE_MAP = {
     "C":"Pyrimidine", "U":"Pyrimidine", "T":"Pyrimidine", 

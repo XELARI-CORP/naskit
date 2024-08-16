@@ -4,6 +4,7 @@ from .pdbAtom import PdbAtom
 from .pdbMolecule import PdbMolecule
 from .pdbResidue import PdbResidue, NucleicAcidResidue, AminoacidResidue
 from .pdbDraw import PDBDraw
+from .pdb_ss_parsing import SSParsing
 from ...exceptions import InvalidPDB
 
 
@@ -131,7 +132,7 @@ class PDBChain(PDBCompounds):
         super().add(residue)
         
         
-class NucleicAcidChain(PDBChain):
+class NucleicAcidChain(PDBChain, SSParsing):
     def __init__(self):
         super().__init__()
         
@@ -159,6 +160,10 @@ class NucleicAcidChain(PDBChain):
             return 'dna'
         else:
             return None
+
+    @property
+    def seq(self):
+        return "".join([res.name.lstrip('D') for res in self])
             
         
 class ProteinChain(PDBChain):
