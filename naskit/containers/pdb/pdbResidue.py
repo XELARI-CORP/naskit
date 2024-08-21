@@ -160,8 +160,11 @@ PACKAGE_PATH = get_package_path()
 
 ## SUGARE
 
-RIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "O3'", "C2'", "O2'", "C1'", "H4'", "H3'", "H2'", "HO2'", "H1'")
-DEOXYRIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "O3'", "C2'", "C1'", "H4'", "H3'", "H2'", "H2''", "H1'")
+RIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "C2'", "O2'", "C1'", "H2'", "HO2'")
+DEOXYRIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "C2'", "C1'",
+                            "H2'", "H2''", 
+                            "H2'1", "H2'2", # alias
+                           )
 RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS = (("C1'", "C1'"), ("C4'", "C4'"), ("O4'", "O4'"))
 
 DEOXYRIBOSE_CORE = NucleicAcidResidue()

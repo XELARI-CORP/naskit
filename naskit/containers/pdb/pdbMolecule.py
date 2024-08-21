@@ -198,7 +198,7 @@ class PdbMolecule(PDBDraw):
         other.chain = self.chain
         
         for aname in source_atoms:
-            if self.get_atom_idx(aname) is not None:
+            if aname in self:
                 self.delete_atom(aname)
         
         for aname in embed_atoms:
