@@ -162,8 +162,9 @@ PACKAGE_PATH = get_package_path()
 
 RIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "C2'", "O2'", "C1'", "H2'", "HO2'")
 DEOXYRIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "C2'", "C1'",
-                            "H2'", "H2''", 
-                            "H2'1", "H2'2", # alias
+                            # alias
+                            ("H2'", "H2'1"), 
+                            ("H2''", "H2'2")
                            )
 RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS = (("C1'", "C1'"), ("C4'", "C4'"), ("O4'", "O4'"))
 

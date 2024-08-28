@@ -56,6 +56,9 @@ class PdbMolecule(PDBDraw):
         return "\n".join([str(a) for a in self.__atoms])
     
     
+    def has_atoms(self, atoms):
+        return list(filter(lambda a: a in self, atoms))
+        
     def copy(self):
         copied_mol = self.__class__()
         for a in self.__atoms:
@@ -198,10 +201,26 @@ class PdbMolecule(PDBDraw):
         other.chain = self.chain
         
         for aname in source_atoms:
+            if not isinstance(aname, str):
+                aname = self.has_atoms(aname)
+                if len(aname)==0: continue
+                aname = aname[0]
+            
             if aname in self:
                 self.delete_atom(aname)
         
         for aname in embed_atoms:
+            aname = aname if isinstance(aname, str) else PdbMolecule.has_atoms(other, aname)[0]
             a = other[aname]
             self.add_atom(a)
-        
+
+
+
+
+
+
+
+
+
+
+
