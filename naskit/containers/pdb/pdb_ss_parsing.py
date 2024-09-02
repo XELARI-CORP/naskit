@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+from typing import List
 import numpy as np
 
 from ...parse_na import NA
@@ -29,7 +31,6 @@ DONOR_ACCEPTOR_GROUPS = {
     },
 }
 
-APPROXIMATE_H_BOND_DIST = 0.96
 EPSILON = {'N':0.71128, 'O':0.87864, 'H':0.06569}
 SIGMA = {'N':0.325, 'O':0.295992, 'H':0.106908}
 
@@ -56,18 +57,40 @@ DNA_CHARGE = {
          'N3':-0.43400, 'H3': 0.342}
 }
 
-MIN_H_ENERGY_THRESHOLD = -1.0 #-1.0493852218717947
+APPROXIMATE_H_BOND_DIST = 1.0
+H_BOND_DISTANCE_CUTOFF = 4.5
+MIN_H_ENERGY_THRESHOLD = -0.125
+
+ORIGIN_DISTANCE_THRESHOLD = 15
+NORMALS_ANGLE_THRESHOLD = 70
+
+
+@dataclass
+class HBond:
+    donor_res_name: str
+    acceptor_res_name: str
+    donor_name: str
+    acceptor_name: str
+    dist: float
+    approximated: bool
+    bond_e: float
+    LJ_e: float
+    C_e: float
+    
 
 class SSParsing:
     
-    def to_na(self, approximate_hs: bool = False):
+    def to_na(self, 
+              approximate_hs: bool = False,
+              verbose: bool = False
+             ):
         """
-        10.1093/nar/gkv716
-        https://academic.oup.com/nar/article/43/21/e142/2468098
+        Geometry analysis inspired by DSSR - 10.1093/nar/gkv716
+        Atomic charges and Lennard-Jones parameters are from amber99bsc1 force field
         """
         
-        energy_matrix = self.get_ss_energy_matrix(approximate_hs)
-        adj = self.parse_ss_adjacency(energy_matrix, threshold=MIN_H_ENERGY_THRESHOLD)
+        energy_matrix = self.get_ss_energy_matrix(approximate_hs, verbose)
+        adj = self.parse_ss_adjacency(energy_matrix, threshold= 2*MIN_H_ENERGY_THRESHOLD)
         na = NucleicAcid.from_adjacency(adj, seq=self.seq)
         return na
 
@@ -102,9 +125,10 @@ class SSParsing:
         origin1 = nt1["N9"] if nt1.is_purine() else nt1["N1"]
         origin2 = nt2["N9"] if nt2.is_purine() else nt2["N1"]
         origin_dist = origin1.dist(origin2)
+        
         if verbose: print(f"{origin_dist:.4f} - distance between the two origins")
-        if origin_dist > 15:
-            if verbose: print("FAILED")
+        if origin_dist > ORIGIN_DISTANCE_THRESHOLD:
+            if verbose: print(f"FAILED - must be < {ORIGIN_DISTANCE_THRESHOLD}")
             return False
 
         # min distance between direction atoms
@@ -112,38 +136,50 @@ class SSParsing:
         b1dir, b2dir = (nt2["N9"], nt2["N1"]) if nt2.is_purine() else (nt2["C6"], nt2["N3"])
         dir_dist = a1dir.dist(b1dir)
         min_dir_dist = a1dir.dist(a2dir) + b1dir.dist(b2dir)
-        if verbose: print(f"{dir_dist:.4f} - direction distance (molecule lengths - {min_dir_dist:.4f})")
+        
+        if verbose: print(f"{dir_dist:.4f} - direction distance")
         if dir_dist < min_dir_dist:
-            if verbose: print("FAILED")
+            if verbose: print(f"FAILED - must be > molecule lengths = {min_dir_dist:.4f}")
             return False
-        
-        # angle between the base normal vectors
-        norm1 = nt1.base_normal_vec()
-        norm2 = nt2.base_normal_vec()
-        normals_angle = np.arccos(abs(np.dot(norm1, norm2))) * 180 / np.pi
-        if verbose: print(f"{normals_angle:.4f} - angle between the base normal vectors")
-        if normals_angle > 65:
-            if verbose: print("FAILED")
-            return False
-        
-        # vertical separation between the base planes
-        # shifted_origin_coords = origin2.coords - origin1.coords
-        # sep_dist = abs(np.dot(shifted_origin_coords, norm1))
-        # if verbose: print(f"{sep_dist:.4f} - vertical separation between the base planes")
-        # if sep_dist > 2.5:
+
+        # angle between direction atoms
+        # dirv1 = a2dir.coords - a1dir.coords
+        # dirv2 = b2dir.coords - b1dir.coords
+        # dirv1 /= np.linalg.norm(dirv1)
+        # dirv2 /= np.linalg.norm(dirv2)
+        # dir_angle = np.arccos(np.dot(dirv2, dirv1)) * 180 / np.pi
+        # if verbose: print(f"{dir_angle:.4f} - direction angle")
+        # if dir_angle < 90:
         #     if verbose: print("FAILED")
         #     return False
         
-        # absence of stacking between the two bases
+        # angle between base normal vectors
+        norm1 = nt1.base_normal_vec()
+        norm2 = nt2.base_normal_vec()
+        normals_angle = np.arccos(abs(np.dot(norm1, norm2))) * 180 / np.pi
         
-        # presence of at least one hydrogen bond
+        if verbose: print(f"{normals_angle:.4f} - angle between base normal vectors")
+        if normals_angle > NORMALS_ANGLE_THRESHOLD: # 67 min required
+            if verbose: print(f"FAILED - must be < {NORMALS_ANGLE_THRESHOLD}")
+            return False
 
+        # vertical plane separation distance
+        # orig_dirv = origin1.coords - origin2.coords
+        # vert_dist1 = np.abs(np.dot(norm1, orig_dirv))
+        # vert_dist2 = np.abs(np.dot(norm2, orig_dirv))
+        # vert_dist = (vert_dist1 + vert_dist2) / 2
+        
+        # if verbose: print(f"{vert_dist:.4f} - vertical plane separation distance")
+        # if vert_dist > 2.5:
+        #     if verbose: print("FAILED")
+        #     return False
 
+        
         return True
 
     
     def _add_h_bonds(self, 
-                     bonds: dict, 
+                     bonds: list, 
                      donor: NucleicAcidResidue, 
                      acceptor: NucleicAcidResidue, 
                      approximate_hs: bool
@@ -154,36 +190,32 @@ class SSParsing:
         
         for hdname, dname in datoms:
             need_approximate = False
-            donor_atom_name = hdname
-            
-            # if hdname not in donor:
-            #     if not approximate_hs:
-            #         raise ValueError(f"Residue {donor.name} {donor.moln} does not contain hydrogen in '{dname}' donor group.")
+            if hdname not in donor:
+                if not approximate_hs:
+                    raise ValueError(f"Residue {donor.name} {donor.moln} does not contain hydrogen in '{dname}' donor group.")
 
-            #     need_approximate = True
-            #     donor_atom_name = dname
-
-            donor_atom = donor[donor_atom_name]
+                need_approximate = True
             
             for acceptor_atom_name in aatoms:
                 acceptor_atom = acceptor[acceptor_atom_name]
                 
-                dist = donor_atom.dist(acceptor_atom)
-                # if need_approximate:
-                #     dist -= APPROXIMATE_H_BOND_DIST / 2
+                if need_approximate:
+                    dist = acceptor_atom.dist(donor[dname]) - APPROXIMATE_H_BOND_DIST / 2
+                else:
+                    dist = acceptor_atom.dist(donor[hdname])
 
-                eps = np.sqrt(EPSILON[donor_atom.element] * EPSILON[acceptor_atom.element])
-                sigma = (SIGMA[donor_atom.element] + SIGMA[acceptor_atom.element]) / 2
+                eps = np.sqrt(EPSILON['H'] * EPSILON[acceptor_atom.element])
+                sigma = (SIGMA['H'] + SIGMA[acceptor_atom.element]) / 2
                 sigma6 = sigma**6
                 sigma12 = sigma6**2
                 dist6 = dist**6
                 dist12 = dist6**2
-                e_lj = 4*eps*(sigma12/dist12 + sigma6/dist6)
+                e_lj = 4*eps*(sigma12/dist12 - sigma6/dist6)
 
                 if donor.natype=="rna":
-                    qd = RNA_CHARGE[donor.name][donor_atom_name]
+                    qd = RNA_CHARGE[donor.name][hdname]
                 else:
-                    qd = DNA_CHARGE[donor.name][donor_atom_name]
+                    qd = DNA_CHARGE[donor.name][hdname]
 
                 if acceptor.natype=="rna":
                     qa = RNA_CHARGE[acceptor.name][acceptor_atom_name]
@@ -192,23 +224,41 @@ class SSParsing:
                 
                 e_c = COULOMB_CONST * qa * qd / dist
                 
-                bonds[(donor_atom_name, acceptor_atom_name)] = (dist, e_lj+e_c, e_lj, e_c)
+                bond = HBond(donor_res_name = donor.name,
+                               acceptor_res_name = acceptor.name,
+                               donor_name = hdname,
+                               acceptor_name = acceptor_atom_name,
+                               dist = dist,
+                               approximated = need_approximate,
+                               bond_e = e_lj+e_c,
+                               LJ_e = e_lj,
+                               C_e = e_c)
+                bonds.append(bond)
 
     
+    def filter_h_bonds(self, bonds: List[HBond]) -> List[HBond]:
+        return list(filter(lambda x: x.dist <= H_BOND_DISTANCE_CUTOFF, bonds))
+        
     def calculate_h_bonds(self, 
                           nt1: NucleicAcidResidue, 
                           nt2: NucleicAcidResidue, 
                           approximate_hs: bool = False
-                         ) -> dict:
+                         ) -> List[HBond]:
         
-        bonds = {} # {('donor atom', 'acceptor atom'): (dist, energy), ...}
+        bonds = []
         self._add_h_bonds(bonds, nt1, nt2, approximate_hs)
         self._add_h_bonds(bonds, nt2, nt1, approximate_hs)
+        bonds = sorted(bonds, key=lambda x: x.bond_e)
+        bonds = self.filter_h_bonds(bonds)
         
         return bonds
         
         
-    def get_ss_energy_matrix(self, approximate_hs: bool = False):
+    def get_ss_energy_matrix(self, 
+                             approximate_hs: bool = False,
+                             verbose: bool = False
+                            ) -> np.ndarray:
+        
         E = np.full((len(self), len(self)), np.inf, dtype=np.float32)
 
         for i in range(len(self)):
@@ -216,11 +266,19 @@ class SSParsing:
             for j in range(i+3, len(self)):
                 nt2 = self[j]
 
-                if not self.can_form_pair(nt1, nt2):
+                if not self.can_form_pair(nt1, nt2, verbose):
                     continue
 
-                h_bonds = self.calculate_h_bonds(nt1, nt2, approximate_hs) # {('donor atom', 'acceptor atom'): (dist, energy), ...}
-                bond_energy = sum([b[1] for b in h_bonds.values()])
+                h_bonds = self.calculate_h_bonds(nt1, nt2, approximate_hs)
+                bond_energy = sum([b.bond_e for b in h_bonds])
+
+                if len(h_bonds)==0:
+                    continue
+                    
+                if h_bonds[0].bond_e > MIN_H_ENERGY_THRESHOLD:
+                    if verbose:
+                        print(f"Strongest H bond - {h_bonds[0].bond_e:.4f} is too week")
+                    continue
                 
                 E[i, j] = bond_energy
                 E[j, i] = bond_energy
