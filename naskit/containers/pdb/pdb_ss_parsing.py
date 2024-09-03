@@ -215,12 +215,12 @@ class SSParsing:
                 if donor.natype=="rna":
                     qd = RNA_CHARGE[donor.name][hdname]
                 else:
-                    qd = DNA_CHARGE[donor.name][hdname]
+                    qd = DNA_CHARGE[donor.name.lstrip('D')][hdname]
 
                 if acceptor.natype=="rna":
                     qa = RNA_CHARGE[acceptor.name][acceptor_atom_name]
                 else:
-                    qa = DNA_CHARGE[acceptor.name][acceptor_atom_name]
+                    qa = DNA_CHARGE[acceptor.name.lstrip('D')][acceptor_atom_name]
                 
                 e_c = COULOMB_CONST * qa * qd / dist
                 
