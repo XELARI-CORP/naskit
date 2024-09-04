@@ -21,12 +21,12 @@ class PDBDraw:
             c = self.coords
             color = [self.atom_colors_map.get(a.element, self.default_color) for a in self.atoms()]
             size = [self.atom_radius_map.get(a.element, self.default_radius)*size_m for a in self.atoms()]
-            name = [f"{a.name} {a.moln} {a.mol_name}" for a in self.atoms()]
+            name = [f"{a.aname} {a.mnum} {a.mname}" for a in self.atoms()]
         else:
             c = np.array([a.coords for a in self.atoms() if a.element!='H'], dtype=np.float32)
             color = [self.atom_colors_map.get(a.element, self.default_color) for a in self.atoms() if a.element!='H']
             size = [self.atom_radius_map.get(a.element, self.default_radius)*size_m for a in self.atoms() if a.element!='H']
-            name = [f"{a.name} {a.moln} {a.mol_name}" for a in self.atoms() if a.element!='H']
+            name = [f"{a.aname} {a.mnum} {a.mname}" for a in self.atoms() if a.element!='H']
 
         return {'coords':c, 'colors':color, 'sizes':size, 'names':name}
         

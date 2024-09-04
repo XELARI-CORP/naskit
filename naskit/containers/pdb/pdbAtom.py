@@ -1,12 +1,14 @@
 import numpy as np
 from typing import Union
+from .atom_name_mapping import ATOM_RENAME_MAP
 from ...exceptions import InvalidPDB
 
 
     
 class PdbAtom:
-    __slots__ = ("is_hetatm", "atomn", "name", "altloc", 
-                 "mol_name", "chain", "moln", 
+    __slots__ = ("is_hetatm", "anum", 
+                 "aname", "altloc", 
+                 "mname", "chain", "mnum", 
                  "occupancy", "temp", 
                  "segment", 
                  "element", "charge", 
@@ -14,8 +16,9 @@ class PdbAtom:
     
     def __init__(
                 self,
-                is_hetatm: bool, atomn: int, name: str, altloc: str,
-                mol_name: str, chain: str, moln: int,
+                is_hetatm: bool, anum: int, 
+                aname: str, altloc: str,
+                mname: str, chain: str, mnum: int,
                 x: float, y: float, z: float,
                 occupancy: float, temp: float,
                 segment: str,
@@ -23,12 +26,12 @@ class PdbAtom:
                 ):
         
         self.is_hetatm = is_hetatm
-        self.atomn = atomn
-        self.name = name
+        self.anum = anum
+        self.aname = aname
         self.altloc = altloc
-        self.mol_name = mol_name
+        self.mname = mname
         self.chain = chain
-        self.moln = moln
+        self.mnum = mnum
         self.occupancy = occupancy
         self.temp = temp
         self.segment = segment
@@ -38,19 +41,21 @@ class PdbAtom:
     
     
     def __str__(self):
-        atom_type = "HETATM" if self.is_hetatm else "ATOM"
         
-        if len(self.name)==4:
-            name = self.name
-        elif len(self.name)==1:
-            name = f" {self.name}  "
+        atom_type = "HETATM" if self.is_hetatm else "ATOM"
+
+        aname = self.aname
+        if len(aname)==4:
+            aname = aname
+        elif len(aname)==1:
+            aname = f" {aname}  "
         elif len(self.element)==1: # H C
-            name = f" {self.name:<3}"    
+            aname = f" {aname:<3}"    
         else: # two characters element (Cl, Fe ...)
-            name = self.name.ljust(4, ' ')
+            aname = aname.ljust(4, ' ')
             
-        mol_name = f"{self.mol_name:>3}".ljust(4)
-        moln = f"{self.moln:>4}".ljust(5)
+        mname = f"{self.mname:>3}".ljust(4)
+        mnum = f"{self.mnum:>4}".ljust(5)
         
         occupancy = f"{self.occupancy:>6.2f}" if isinstance(self.occupancy, float) else " "*6
         temp = f"{self.temp:>6.2f}" if isinstance(self.temp, float) else " "*6
@@ -60,12 +65,13 @@ class PdbAtom:
             charge = ('-', '+')[int(self.charge>0)] + str(abs(self.charge))
             charge = charge.rstrip('1')
         
-        return (f"{atom_type:<6}{self.atomn:>5} "
-                f"{name}{self.altloc:>1}"
-                f"{mol_name}{self.chain}{moln}   "
+        return (f"{atom_type:<6}{self.anum:>5} "
+                f"{aname}{self.altloc:>1}"
+                f"{mname}{self.chain}{mnum}   "
                 f"{self.coords[0]:>8.3f}{self.coords[1]:>8.3f}{self.coords[2]:>8.3f}"
                 f"{occupancy}{temp}      "
                 f"{self.segment:<4}{self.element:>2}{charge:<2}")
+
     
     @property
     def x(self):
@@ -80,18 +86,20 @@ class PdbAtom:
         return self.coords[2]
     
     def copy(self):
-        return self.__class__(is_hetatm=self.is_hetatm, atomn=self.atomn, name=self.name, altloc=self.altloc,
-                              mol_name=self.mol_name, chain=self.chain, moln=self.moln,
+        return self.__class__(is_hetatm=self.is_hetatm, anum=self.anum, 
+                              aname=self.aname, altloc=self.altloc,
+                              mname=self.mname, chain=self.chain, mnum=self.mnum,
                               x=self.x, y=self.y, z=self.z,
                               occupancy=self.occupancy, temp=self.temp,
                               segment=self.segment, element=self.element, charge=self.charge)
     
     def as_dict(self):
-        return dict(is_hetatm=self.is_hetatm, atomn=self.atomn, name=self.name, altloc=self.altloc,
-                      mol_name=self.mol_name, chain=self.chain, moln=self.moln,
-                      coords=self.coords,
-                      occupancy=self.occupancy, temp=self.temp,
-                      segment=self.segment, element=self.element, charge=self.charge)
+        return dict(is_hetatm=self.is_hetatm, anum=self.anum, 
+                    aname=self.aname, altloc=self.altloc,
+                    mname=self.mname, chain=self.chain, mnum=self.mnum,
+                    coords=self.coords,
+                    occupancy=self.occupancy, temp=self.temp,
+                    segment=self.segment, element=self.element, charge=self.charge)
 
     def dist(self, a: Union["PdbAtom", "PdbMolecule"]):
         if len(a.coords.shape)==1:
@@ -99,8 +107,8 @@ class PdbAtom:
         return np.linalg.norm((a.coords - self.coords), axis=1)
     
     @staticmethod
-    def _default_element_derive_func(is_hetatm: bool, name: str, mol_name: str, chain: str):
-        return name[0]
+    def _default_element_derive_func(is_hetatm: bool, aname: str, mname: str, chain: str):
+        return aname[0]
     
     @classmethod
     def from_pdb_line(cls,
@@ -119,12 +127,12 @@ class PdbAtom:
         line = line.ljust(80, ' ')
         
         is_hetatm = line.startswith("HETATM")  # ATOM or HETATM
-        atomn = int(line[6:11].strip())        # Atom serial number
-        name = line[12:16].strip()             # Atom name
+        anum = int(line[6:11].strip())         # Atom serial number
+        aname = line[12:16].strip()            # Atom name
         altloc = line[16]                      # Alternate location indicator
-        mol_name = line[17:21].strip()         # Residue/mol name. Must be [17:20], used extended range [17:21]
+        mname = line[17:21].strip()            # Residue/mol name. Must be [17:20], used extended range [17:21]
         chain = line[21]                       # Chain identifier
-        moln = int(line[22:27].strip())        # Residue sequence number
+        mnum = int(line[22:27].strip())        # Residue sequence number
         # Ignore insertion code at 26
         x = float(line[30:38].strip())         # X
         y = float(line[38:46].strip())         # Y
@@ -140,8 +148,8 @@ class PdbAtom:
         element = line[76:78].strip()          # Element symbol
         if element=="":
             if not derive_element:
-                raise InvalidPDB(f"Atom {atomn} {name} has no element field.")
-            element = element_derive_func(is_hetatm, name, mol_name, chain)     
+                raise InvalidPDB(f"Atom {anum} {aname} has no element field.")
+            element = element_derive_func(is_hetatm, aname, mname, chain)     
         
         charge = line[78:80].strip()           # Charge
         if charge=='': charge = "+0"
@@ -154,9 +162,18 @@ class PdbAtom:
             elif sign=='-':
                 charge *= -1
             else:
-                raise InvalidPDB(f"Invalid atom charge sign '{sign}' in atom {atomn} {name}.")
+                raise InvalidPDB(f"Invalid atom charge sign '{sign}' in atom {anum} {aname}.")
         except:
-            raise InvalidPDB(f"Invalid atom charge '{charge}' in atom {atomn} {name}.")
-        
-        return PdbAtom(is_hetatm, atomn, name, altloc, mol_name, chain, moln,
-                        x, y, z, occupancy, temp, segment, element, charge)
+            raise InvalidPDB(f"Invalid atom charge '{charge}' in atom {anum} {aname}.")
+
+        return PdbAtom(is_hetatm, anum, 
+                       aname, altloc, 
+                       mname, chain, mnum, 
+                       x, y, z, occupancy, temp, segment, element, charge)
+
+
+
+
+
+
+

@@ -24,7 +24,7 @@ class NucleicAcidResidue(PdbResidue):
     
     @property
     def natype(self):
-        return "dna" if "D" in self.name else "rna"
+        return "dna" if "D" in self.mname else "rna"
     
     
     def is_protonated(self):
@@ -32,10 +32,10 @@ class NucleicAcidResidue(PdbResidue):
 
 
     def is_purine(self) -> bool:
-        return self.name.lstrip("D") in "AG" and all([a in self for a in PURINE_CORE_ATOMS])
+        return self.mname.lstrip("D") in "AG" and all([a in self for a in PURINE_CORE_ATOMS])
 
     def is_pyrimidine(self) -> bool:
-        return self.name.lstrip("D") in "CUT" and all([a in self for a in PYRIMIDINE_CORE_ATOMS])
+        return self.mname.lstrip("D") in "CUT" and all([a in self for a in PYRIMIDINE_CORE_ATOMS])
 
     def base_normal_vec(self):
         anames = ("N9", "C4", "C8") if self.is_purine() else ("N1", "C2", "C6")
@@ -56,22 +56,22 @@ class NucleicAcidResidue(PdbResidue):
         
         ac.coords = self[dira2].coords + bond_len*bondv
         ac.element = aname[0]
-        ac.name = aname
-        ac.atomn = 1 + max([a.atomn for a in self])
+        ac.aname = aname
+        ac.anum = 1 + max([a.anum for a in self])
         self.add_atom(ac)
         
     
     def fill3end(self):
-        if "HO3'" not in self:
-            self._add_atom_on_axis("C3'", "O3'", "HO3'", 0.96)
+        if "H3T" not in self:
+            self._add_atom_on_axis("C3'", "O3'", "H3T", 0.96)
 
     
     def fill5end(self):
         if 'P' in self:
-            self._add_atom_on_axis("O5'", "P", "OP3", 1.6097)
-            self._add_atom_on_axis("P", "OP3", "HOP3", 0.96)
-        elif "HO5'" not in self:
-            self._add_atom_on_axis("C5'", "O5'", "HO5'", 0.96)
+            self._add_atom_on_axis("O5'", "P", "O3P", 1.6097)
+            self._add_atom_on_axis("P", "O3P", "HO3P", 0.96)
+        elif "H5T" not in self:
+            self._add_atom_on_axis("C5'", "O5'", "H5T", 0.96)
         
     
     def to_rna(self):
@@ -79,22 +79,22 @@ class NucleicAcidResidue(PdbResidue):
             return
         
         self.change_sugar('ribose')
-        if self.name=="DT":
+        if self.mname=="DT":
             self.change_nucleobase("U")
-            self.name = "U"
+            self.mname = "U"
         else:
-            self.name = self.name[1] # DC -> C
+            self.mname = self.mname[1] # DC -> C
         
     def to_dna(self):
         if self.natype=='dna':
             return
         
         self.change_sugar('deoxyribose')
-        if self.name=="U":
+        if self.mname=="U":
             self.change_nucleobase("T")
-            self.name = "DT"
+            self.mname = "DT"
         else:
-            self.name = "D" + self.name
+            self.mname = "D" + self.mname
             
             
     def change_sugar(self, sugar: str):
@@ -114,20 +114,20 @@ class NucleicAcidResidue(PdbResidue):
             raise ValueError(f"Sugar must be 'ribose', 'rna' or 'deoxyribose', 'dna'. got {sugar}")
             
     def change_nucleobase(self, base: str):
-        if base==self.name.lstrip("D"):
+        if base==self.mname.lstrip("D"):
             return
         
         new_mol = NT_TEMPLATE_MAP.get(base)
         if new_mol is None:
             raise ValueError(f"Expected base name A, G, C, U, T, got {base}.")
             
-        source_atoms = BASE_NAME_SOURCE_ATOMS_MAP.get(self.name[-1])
+        source_atoms = BASE_NAME_SOURCE_ATOMS_MAP.get(self.mname[-1])
         embed_atoms = BASE_NAME_SOURCE_ATOMS_MAP.get(base)
         
-        self_type = NAME_BASE_TYPE_MAP[self.name[-1]]
+        self_type = NAME_BASE_TYPE_MAP[self.mname[-1]]
         other_type = NAME_BASE_TYPE_MAP[base]
         correspondence = BASE_CORESPONDANCE_MAP[f"{self_type}-{other_type}"]
-        source_origin_atom = BASE_ORIGIN_ATOM_MAP[self.name[-1]]
+        source_origin_atom = BASE_ORIGIN_ATOM_MAP[self.mname[-1]]
         embed_origin_atom = BASE_ORIGIN_ATOM_MAP[base]
         
         self._embed_fragment_with_hydrogen_check(new_mol,
@@ -150,7 +150,7 @@ class NucleicAcidResidue(PdbResidue):
         was_protonated = self.is_protonated()
         self.embed_molecule_fragment(other, source_atoms, embed_atoms, correspondence, source_origin_atom, embed_origin_atom)
         if not was_protonated:
-            h_atoms = [a.name for a in self.atoms() if a.element=='H']
+            h_atoms = [a.aname for a in self.atoms() if a.element=='H']
             for h_atom in h_atoms:
                 self.delete_atom(h_atom)
         
@@ -160,12 +160,8 @@ PACKAGE_PATH = get_package_path()
 
 ## SUGARE
 
-RIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "C2'", "O2'", "C1'", "H2'", "HO2'")
-DEOXYRIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "C2'", "C1'",
-                            # alias
-                            ("H2'", "H2'1"), 
-                            ("H2''", "H2'2")
-                           )
+RIBOSE_SOURSE_ATOMS =      ("C4'", "O4'", "C3'", "C2'", "C1'", "H2'1", "O2'", "HO'2")
+DEOXYRIBOSE_SOURSE_ATOMS = ("C4'", "O4'", "C3'", "C2'", "C1'", "H2'1", "H2'2")
 RIBOSE_DEOXYRIBOSE_ALIGN_CORRESPONDENCE_ATOMS = (("C1'", "C1'"), ("C4'", "C4'"), ("O4'", "O4'"))
 
 DEOXYRIBOSE_CORE = NucleicAcidResidue()

@@ -192,7 +192,7 @@ class SSParsing:
             need_approximate = False
             if hdname not in donor:
                 if not approximate_hs:
-                    raise ValueError(f"Residue {donor.name} {donor.moln} does not contain hydrogen in '{dname}' donor group.")
+                    raise ValueError(f"Residue {donor.name} {donor.num} does not contain hydrogen in '{dname}' donor group.")
 
                 need_approximate = True
             

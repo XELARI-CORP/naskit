@@ -146,14 +146,14 @@ class pdbRead:
         for at in atom_tokens:
             if isinstance(at, PdbAtom):
                 if reset_mol_idx:
-                    cur_mol_idx = at.moln
+                    cur_mol_idx = at.mnum
                     reset_mol_idx = False
                     
-                if at.moln!=cur_mol_idx:
+                if at.mnum!=cur_mol_idx:
                     if len(mol_atoms)>0:
                         mol_tokens.append(self.make_mol(mol_atoms))
                     mol_atoms = []
-                    cur_mol_idx = at.moln
+                    cur_mol_idx = at.mnum
                     
                 mol_atoms.append(at)
                 
@@ -213,9 +213,9 @@ class pdbRead:
         
         
     def make_mol(self, atoms):
-        if atoms[0].mol_name in NA_NAMES:
+        if atoms[0].mname in NA_NAMES:
             m = NucleicAcidResidue()
-        elif atoms[0].mol_name in AMINOACID_NAMES:
+        elif atoms[0].mname in AMINOACID_NAMES:
             m = AminoacidResidue()
         else:
             m = PdbMolecule()

@@ -72,7 +72,7 @@ class PDBCompounds(PDBDraw):
         offset = 0
         for c in self.__comps:
             if isinstance(c, (PdbMolecule, NucleicAcidResidue, AminoacidResidue)):
-                c.moln = (initn + offset)
+                c.mnum = (initn + offset)
                 offset += 1
             else: # chain
                 c.renum_mols(initn + offset)
@@ -131,12 +131,12 @@ class PDBChain(PDBCompounds):
             if residue.chain!=res.chain:
                 raise InvalidPDB(f"All residues of a chain must have the same chain name ({res.chain}), "
                                  f"got {residue.chain} in residue with first atom - "
-                                 f"{residue[0].atomn} {residue[0].name}.")
+                                 f"{residue[0].anum} {residue[0].aname}.")
                 
-            if residue.moln==res.moln:
-                raise InvalidPDB(f"Residue with molecule number {residue.moln} "
+            if residue.mnum==res.mnum:
+                raise InvalidPDB(f"Residue with molecule number {residue.mnum} "
                                  f"already exists in chain. Tried to add residue with first atom - "
-                                 f"{residue[0].atomn} {residue[0].name}.")
+                                 f"{residue[0].anum} {residue[0].aname}.")
             
         super().add(residue)
         
@@ -149,7 +149,7 @@ class NucleicAcidChain(PDBChain, SSParsing):
         if not isinstance(residue, NucleicAcidResidue):
             last_residue_message = ""
             if len(self):
-                last_residue_message = f"Last residue starts with atom - {residue[0].atomn} {residue[0].name}"
+                last_residue_message = f"Last residue starts with atom - {residue[0].anum} {residue[0].aname}"
             raise InvalidPDB(f"Expected NucleicAcidResidue, got {type(residue)}. {last_residue_message}")
             
         super().add(residue)
@@ -172,7 +172,18 @@ class NucleicAcidChain(PDBChain, SSParsing):
 
     @property
     def seq(self):
-        return "".join([res.name.lstrip('D') for res in self])
+        return "".join([res.mname.lstrip('D') for res in self])
+
+    
+    def fill3end(self):
+        self[-1].fill3end()
+
+    def fill5end(self):
+        self[0].fill5end()
+    
+    def fill_ends(self):
+        self.fill3end()
+        self.fill5end()
             
         
 class ProteinChain(PDBChain):
@@ -183,7 +194,7 @@ class ProteinChain(PDBChain):
         if not isinstance(residue, AminoacidResidue):
             last_residue_message = ""
             if len(self):
-                last_residue_message = f"Last residue starts with atom - {residue[0].atomn} {residue[0].name}"
+                last_residue_message = f"Last residue starts with atom - {residue[0].anum} {residue[0].aname}"
             raise InvalidPDB(f"Expected AminoacidResidue, got {type(residue)}. {last_residue_message}")
             
         super().add(residue)
@@ -233,7 +244,7 @@ class PDB(PDBCompounds):
                 if nmols==0: 
                     moli = i
                     molt = c.__class__.__name__
-                    mol_name = c.name
+                    mol_name = c.mname
                 nmols+=1
         
         if nmols: s.append(f"[{moli:>3}] - {nmols} {molt} with name {mol_name}")

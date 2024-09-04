@@ -16,7 +16,7 @@ class PdbMolecule(PDBDraw):
         
     def _remap(self):
         self.__name_idx_map.clear()
-        self.__name_idx_map = {atom.name:i for i, atom in enumerate(self.__atoms)}
+        self.__name_idx_map = {atom.aname:i for i, atom in enumerate(self.__atoms)}
         
         
     def __getitem__(self, i: Union[int, str, list, tuple]):
@@ -50,14 +50,11 @@ class PdbMolecule(PDBDraw):
         return iter(self.__atoms)
     
     def __repr__(self):
-        return f"{self.name} {self.__class__.__name__} with {len(self)} atoms at {hex(id(self))}"
+        return f"{self.mname} {self.__class__.__name__} with {len(self)} atoms at {hex(id(self))}"
     
     def __str__(self):
         return "\n".join([str(a) for a in self.__atoms])
     
-    
-    def has_atoms(self, atoms):
-        return list(filter(lambda a: a in self, atoms))
         
     def copy(self):
         copied_mol = self.__class__()
@@ -73,23 +70,23 @@ class PdbMolecule(PDBDraw):
         
     def add_atom(self, atom: PdbAtom, skip_validation: bool = False):
         if len(self.__atoms) and (not skip_validation):
-            if self.__name_idx_map.get(atom.name) is not None:
-                raise InvalidPDB(f"Atom (number {atom.atomn}) with name {atom.name} "
-                                 f"is already in molecule {self.name} (number {self.moln}).")
+            if self.__name_idx_map.get(atom.aname) is not None:
+                raise InvalidPDB(f"Atom (number {atom.anum}) with name {atom.aname} "
+                                 f"is already in molecule {self.mname} (number {self.mnum}).")
             
             a = self.__atoms[0]
-            if atom.mol_name!=a.mol_name:
-                raise InvalidPDB(f"All atoms of a molecule (number {a.moln}) "
-                                 f"must have the same molecule name ({a.mol_name}), "
-                                 f"got {atom.mol_name}.")
+            if atom.mname!=a.mname:
+                raise InvalidPDB(f"All atoms of a molecule (number {a.mnum}) "
+                                 f"must have the same molecule name ({a.mname}), "
+                                 f"got {atom.mname}.")
 
             if atom.chain!=a.chain:
-                raise InvalidPDB(f"All atoms of a molecule (number {a.moln}) "
+                raise InvalidPDB(f"All atoms of a molecule (number {a.mnum}) "
                                  f"must have the same chain name ({a.chain}), "
                                  f"got {atom.chain}.")
             
         self.__atoms.append(atom)
-        self.__name_idx_map[atom.name] = len(self.__atoms) - 1
+        self.__name_idx_map[atom.aname] = len(self.__atoms) - 1
         
     def get_atom_idx(self, name: str):
         return self.__name_idx_map.get(name)
@@ -105,7 +102,7 @@ class PdbMolecule(PDBDraw):
         
     def renum_atoms(self, initn: int = 1):
         for i, a in enumerate(self.__atoms):
-            a.atomn = initn + i
+            a.anum = initn + i
         
     def atoms(self):
         for a in self.__atoms:
@@ -117,22 +114,22 @@ class PdbMolecule(PDBDraw):
         return len(self)
     
     @property
-    def moln(self):
-        return self.__atoms[0].moln
+    def mnum(self):
+        return self.__atoms[0].mnum
     
-    @moln.setter
-    def moln(self, moln: int):
+    @mnum.setter
+    def mnum(self, mnum: int):
         for a in self.__atoms:
-            a.moln = moln
+            a.mnum = mnum
             
     @property
-    def name(self):
-        return self.__atoms[0].mol_name
+    def mname(self):
+        return self.__atoms[0].mname
     
-    @name.setter
-    def name(self, name: str):
+    @mname.setter
+    def mname(self, mname: str):
         for a in self.__atoms:
-            a.mol_name = name
+            a.mname = mname
     
     @property
     def chain(self):
@@ -192,25 +189,21 @@ class PdbMolecule(PDBDraw):
             
         source_origin_idx = None if (source_origin_atom is None) else self.get_atom_idx(source_origin_atom)
         embed_origin_idx = None if (embed_origin_atom is None) else other.get_atom_idx(embed_origin_atom)
-            
+        
         other.coords = align(self.coords, other.coords, 
                              aidx, bidx,
                              source_origin_idx, embed_origin_idx)
-        other.moln = self.moln
-        other.name = self.name
+        other.mnum = self.mnum
+        other.mname = self.mname
         other.chain = self.chain
         
         for aname in source_atoms:
-            if not isinstance(aname, str):
-                aname = self.has_atoms(aname)
-                if len(aname)==0: continue
-                aname = aname[0]
-            
-            if aname in self:
-                self.delete_atom(aname)
+            if aname not in self:
+                raise ValueError(f"Source molecule {self.mname} {self.mnum} does not have {aname} atom to delete.")
+                
+            self.delete_atom(aname)
         
         for aname in embed_atoms:
-            aname = aname if isinstance(aname, str) else PdbMolecule.has_atoms(other, aname)[0]
             a = other[aname]
             self.add_atom(a)
 
