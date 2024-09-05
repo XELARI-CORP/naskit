@@ -21,22 +21,23 @@ class NucleicAcidResidue(PdbResidue):
     def __init__(self):
         super().__init__()
         
-    
-    @property
-    def natype(self):
-        return "dna" if "D" in self.mname else "rna"
-    
+
+    def is_rna(self):
+        return "O2'" in self
+
+    def is_dna(self):
+        return "O2'" not in self
     
     def is_protonated(self):
         return any([a.element=='H' for a in self.atoms()])
 
-
     def is_purine(self) -> bool:
-        return self.mname.lstrip("D") in "AG" and all([a in self for a in PURINE_CORE_ATOMS])
+        return all([a in self for a in PURINE_CORE_ATOMS])
 
     def is_pyrimidine(self) -> bool:
-        return self.mname.lstrip("D") in "CUT" and all([a in self for a in PYRIMIDINE_CORE_ATOMS])
+        return all([a in self for a in PYRIMIDINE_CORE_ATOMS])
 
+    
     def base_normal_vec(self):
         anames = ("N9", "C4", "C8") if self.is_purine() else ("N1", "C2", "C6")
         o, a, b = [self[aname] for aname in anames]
@@ -75,22 +76,22 @@ class NucleicAcidResidue(PdbResidue):
         
     
     def to_rna(self):
-        if self.natype=='rna':
+        if self.is_rna():
             return
         
         self.change_sugar('ribose')
-        if self.mname=="DT":
+        if "T" in self.mname:
             self.change_nucleobase("U")
             self.mname = "U"
         else:
             self.mname = self.mname[1] # DC -> C
         
     def to_dna(self):
-        if self.natype=='dna':
+        if self.is_dna():
             return
         
         self.change_sugar('deoxyribose')
-        if self.mname=="U":
+        if "U" in self.mname:
             self.change_nucleobase("T")
             self.mname = "DT"
         else:

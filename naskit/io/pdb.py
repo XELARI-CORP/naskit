@@ -14,7 +14,7 @@ from ..exceptions import InvalidPDB
 
 
 
-NA_NAMES = {"A", "U", "G", "C", "I", 
+NA_NAMES = {"A", "U", "G", "C", "I", "T",
             "DA", "DT", "DG", "DC"}
 
 AMINOACID_NAMES = {'ALA', 'CYS', 'ASP', 'GLU', 

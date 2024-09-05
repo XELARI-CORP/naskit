@@ -160,16 +160,16 @@ class NucleicAcidChain(PDBChain, SSParsing):
         
     def to_dna(self):
         for c in self: c.to_dna()
-        
-    @property
-    def natype(self):
-        if all([c.natype=='rna' for c in self]):
-            return 'rna'
-        elif all([c.natype=='dna' for c in self]):
-            return 'dna'
-        else:
-            return None
 
+    def is_rna(self):
+        return all([r.is_rna() for r in self])
+
+    def is_dna(self):
+        return all([r.is_dna() for r in self])
+    
+    def is_protonated(self):
+        return all([r.is_protonated() for r in self])
+        
     @property
     def seq(self):
         return "".join([res.mname.lstrip('D') for res in self])
