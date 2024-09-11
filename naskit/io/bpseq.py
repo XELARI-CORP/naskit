@@ -15,7 +15,7 @@ META_SEPARATOR = ": "
 class bpseqRead:
     
     def __init__(self, file: Union[str, Path, TextIOWrapper, _TemporaryFileWrapper], *, 
-                 raise_na_errors: bool = False, 
+                 raise_na_errors: bool = True, 
                  file_as_name: bool = False, 
                 ):
         
@@ -59,10 +59,14 @@ class bpseqRead:
                 seq.append(nb)
                 
                 if (idx-prev_idx)!=1:
-                    raise InvalidStructure(f"Nucleic base indexes must be sequential")
+                    if self.raise_na_errors:
+                        raise InvalidStructure(f"Nucleotide indexes must be sequential, got {idx} after {prev_idx}")
+                    return None
 
                 if idx==compl:
-                    raise InvalidStructure(f"Nucleic base {idx-1} is self bounded")
+                    if self.raise_na_errors:
+                        raise InvalidStructure(f"Nucleotide {idx} is self bounded")
+                    return None
                 
                 prev_idx = idx
                 if not compl:
@@ -82,18 +86,18 @@ class bpseqRead:
             # e : o
             if (e<0 or e>=len(seq)) or (o<0 or o>=len(seq)):
                 if self.raise_na_errors:
-                    raise InvalidStructure(f"Paired nucleic base index out of range")
+                    raise InvalidStructure(f"Nucleotide index out of range in pair - {o}, {e}")
                 return None
             
             expected_o = pairs.get(e)
             if expected_o is None:
                 if self.raise_na_errors:
-                    raise InvalidStructure(f"Directed bond between nucleic base {o} and {e}")
+                    raise InvalidStructure(f"Directed bond between nucleotide index {o} and {e}")
                 return None
             
             if expected_o!=o:
                 if self.raise_na_errors:
-                    raise InvalidStructure(f"Nucleic base {e} has two bonds")
+                    raise InvalidStructure(f"Nucleotide index {e} has two bonds")
                 return None
 
         # make na
@@ -113,7 +117,7 @@ class bpseqRead:
 class bpseqDirRead:
     
     def __init__(self, Dir: Union[str, Path], *, 
-                 raise_na_errors: bool = False, 
+                 raise_na_errors: bool = True, 
                  file_as_name: bool = False, 
                 ):
             
