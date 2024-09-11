@@ -56,6 +56,10 @@ class PDBCompounds(PDBDraw):
         if len(a.coords.shape)==1:
             return np.linalg.norm((self.coords - a.coords), axis=1)
         return np.linalg.norm((self.coords[:, np.newaxis, :] - a.coords), axis=2)
+
+    def translate(self, lang: str = "amber"):
+        for c in self.__comps:
+            c.translate(lang)
     
     def add(self, compound: Union[PdbMolecule, 
                                   NucleicAcidResidue, AminoacidResidue, 
@@ -237,7 +241,7 @@ class PDB(PDBCompounds):
                 s.append(f"[{i:>3}] - {repr(c)}")
             
             else:
-                if mol_name is not None and c[0].mol_name!=mol_name:
+                if mol_name is not None and c[0].mname!=mol_name:
                     s.append(f"[{moli:>3}] - {nmols} {molt} with name {mol_name}")
                     nmols = 0
                     
@@ -275,3 +279,12 @@ class PDBModels:
             s.append(f"ENDMDL")
         
         return "\n".join(s)
+
+    def translate(self, lang: str = "amber"):
+        for m in self.__models:
+            m.translate(lang)
+
+
+
+
+

@@ -67,6 +67,10 @@ class PdbMolecule(PDBDraw):
         if len(a.coords.shape)==1:
             return np.linalg.norm((self.coords - a.coords), axis=1)
         return np.linalg.norm((self.coords[:, np.newaxis, :] - a.coords), axis=2)
+
+    def translate(self, lang: str = "amber"):
+        for a in self.__atoms:
+            a.translate(lang)
         
     def add_atom(self, atom: PdbAtom, skip_validation: bool = False):
         if len(self.__atoms) and (not skip_validation):
@@ -199,7 +203,10 @@ class PdbMolecule(PDBDraw):
         
         for aname in source_atoms:
             if aname not in self:
-                raise ValueError(f"Source molecule {self.mname} {self.mnum} does not have {aname} atom to delete.")
+                if aname[0]=="H":
+                    continue
+                else:
+                    raise ValueError(f"Source molecule {self.mname} {self.mnum} does not have {aname} atom to delete.")
                 
             self.delete_atom(aname)
         

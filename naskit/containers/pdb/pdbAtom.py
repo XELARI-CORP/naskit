@@ -105,6 +105,11 @@ class PdbAtom:
         if len(a.coords.shape)==1:
             return np.linalg.norm(a.coords - self.coords)
         return np.linalg.norm((a.coords - self.coords), axis=1)
+
+    def translate(self, lang: str = "amber"):
+        if self.aname not in ATOM_RENAME_MAP[lang]:
+            raise ValueError(f"Couldn't translate atom {self.aname} {self.anum} in molecule {self.mname} {self.mnum} to {lang} name")
+        self.aname = ATOM_RENAME_MAP[lang][self.aname]
     
     @staticmethod
     def _default_element_derive_func(is_hetatm: bool, aname: str, mname: str, chain: str):

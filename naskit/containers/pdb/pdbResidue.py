@@ -84,7 +84,7 @@ class NucleicAcidResidue(PdbResidue):
             self.change_nucleobase("U")
             self.mname = "U"
         else:
-            self.mname = self.mname[1] # DC -> C
+            self.mname = self.mname[-1] # DC -> C
         
     def to_dna(self):
         if self.is_dna():
