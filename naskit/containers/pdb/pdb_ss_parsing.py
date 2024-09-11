@@ -185,14 +185,14 @@ class SSParsing:
                      approximate_hs: bool
                     ): 
         
-        datoms = DONOR_ACCEPTOR_GROUPS[donor.name.lstrip('D')]["donors"]
-        aatoms = DONOR_ACCEPTOR_GROUPS[acceptor.name.lstrip('D')]["acceptors"]
+        datoms = DONOR_ACCEPTOR_GROUPS[donor.mname.lstrip('D')]["donors"]
+        aatoms = DONOR_ACCEPTOR_GROUPS[acceptor.mname.lstrip('D')]["acceptors"]
         
         for hdname, dname in datoms:
             need_approximate = False
             if hdname not in donor:
                 if not approximate_hs:
-                    raise ValueError(f"Residue {donor.name} {donor.num} does not contain hydrogen in '{dname}' donor group.")
+                    raise ValueError(f"Residue {donor.mname} {donor.mnum} does not contain hydrogen in '{dname}' donor group.")
 
                 need_approximate = True
             
@@ -213,19 +213,19 @@ class SSParsing:
                 e_lj = 4*eps*(sigma12/dist12 - sigma6/dist6)
 
                 if donor.natype=="rna":
-                    qd = RNA_CHARGE[donor.name][hdname]
+                    qd = RNA_CHARGE[donor.mname][hdname]
                 else:
-                    qd = DNA_CHARGE[donor.name.lstrip('D')][hdname]
+                    qd = DNA_CHARGE[donor.mname.lstrip('D')][hdname]
 
                 if acceptor.natype=="rna":
-                    qa = RNA_CHARGE[acceptor.name][acceptor_atom_name]
+                    qa = RNA_CHARGE[acceptor.mname][acceptor_atom_name]
                 else:
-                    qa = DNA_CHARGE[acceptor.name.lstrip('D')][acceptor_atom_name]
+                    qa = DNA_CHARGE[acceptor.mname.lstrip('D')][acceptor_atom_name]
                 
                 e_c = COULOMB_CONST * qa * qd / dist
                 
-                bond = HBond(donor_res_name = donor.name,
-                               acceptor_res_name = acceptor.name,
+                bond = HBond(donor_res_name = donor.mname,
+                               acceptor_res_name = acceptor.mname,
                                donor_name = hdname,
                                acceptor_name = acceptor_atom_name,
                                dist = dist,
