@@ -47,7 +47,8 @@ class pdbRead:
         
     def read(self, 
              derive_element: bool = False, 
-             element_derive_func = None
+             element_derive_func = None,
+             skip_HETATM: bool = False
             ):
         
         lines = self._file.readlines()
@@ -62,6 +63,9 @@ class pdbRead:
                 
         header = "" if i==0 else "\n".join(lines[:i])
         lines = lines[i:]
+        if skip_HETATM:
+            lines = list(filter(lambda l: not l.startswith("HETATM"), lines))
+            
         tokens = self.parse_atoms(lines, 
                                   derive_element=derive_element, 
                                   element_derive_func=element_derive_func)
