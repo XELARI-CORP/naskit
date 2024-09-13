@@ -62,7 +62,8 @@ H_BOND_DISTANCE_CUTOFF = 4.5
 MIN_H_ENERGY_THRESHOLD = -0.125
 
 ORIGIN_DISTANCE_THRESHOLD = 15
-NORMALS_ANGLE_THRESHOLD = 70
+NORMALS_ANGLE_THRESHOLD = 75
+COPLANAR_ANGLE_THRESHOLD = 25
 
 
 @dataclass
@@ -164,15 +165,17 @@ class SSParsing:
             return False
 
         # vertical plane separation distance
-        # orig_dirv = origin1.coords - origin2.coords
-        # vert_dist1 = np.abs(np.dot(norm1, orig_dirv))
-        # vert_dist2 = np.abs(np.dot(norm2, orig_dirv))
-        # vert_dist = (vert_dist1 + vert_dist2) / 2
-        
-        # if verbose: print(f"{vert_dist:.4f} - vertical plane separation distance")
-        # if vert_dist > 2.5:
-        #     if verbose: print("FAILED")
-        #     return False
+        if normals_angle<COPLANAR_ANGLE_THRESHOLD: # check if bases are coplanar
+            if verbose: print(f"Use vertical plane separation distance filter (norm angle < 25)")
+            orig_dirv = origin1.coords - origin2.coords
+            vert_dist1 = np.abs(np.dot(norm1, orig_dirv))
+            vert_dist2 = np.abs(np.dot(norm2, orig_dirv))
+            vert_dist = (vert_dist1 + vert_dist2) / 2
+            
+            if verbose: print(f"{vert_dist:.4f} - vertical plane separation distance")
+            if vert_dist > 2.5:
+                if verbose: print("FAILED")
+                return False
 
         
         return True
@@ -212,12 +215,12 @@ class SSParsing:
                 dist12 = dist6**2
                 e_lj = 4*eps*(sigma12/dist12 - sigma6/dist6)
 
-                if donor.natype=="rna":
+                if donor.is_rna():
                     qd = RNA_CHARGE[donor.mname][hdname]
                 else:
                     qd = DNA_CHARGE[donor.mname.lstrip('D')][hdname]
 
-                if acceptor.natype=="rna":
+                if acceptor.is_rna():
                     qa = RNA_CHARGE[acceptor.mname][acceptor_atom_name]
                 else:
                     qa = DNA_CHARGE[acceptor.mname.lstrip('D')][acceptor_atom_name]
