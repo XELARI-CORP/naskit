@@ -2,14 +2,15 @@
 
 <h2>Installation</h2>
 
-```
-python3 -m pip install -e .
-```
+- Stable version
 
-Test naskit:
 ```
-python3 -m pip install -e .[dev]
-pytest test
+pip install naskit
+```
+- Dev version with latest features
+
+```
+pip install git+https://github.com/XELARI-CORP/naskit@dev
 ```
 
 <h2>Usage</h2>

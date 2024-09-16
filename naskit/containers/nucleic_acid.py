@@ -47,6 +47,7 @@ class NucleicAcid(NucleicAcidGraph, DrawNA):
         return ''.join(self._nodes)
     
     
+    # TODO: structure setter
     @cached_property
     def struct(self) -> str:
         return self.assemble_dot_structure()
