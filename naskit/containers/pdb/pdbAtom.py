@@ -111,10 +111,11 @@ class PdbAtom:
         return np.linalg.norm((a.coords - self.coords), axis=1)
     
     def translate(self, lang: str = "amber", udict: dict = {}):
-        if self.aname not in ATOM_RENAME_MAP[lang] and self.aname not in udict:
+        a = self.aname
+        if a not in ATOM_RENAME_MAP[lang] and a not in udict:
             raise ValueError(f"Couldn't translate atom {self.aname} {self.anum} in molecule {self.mname} {self.mnum} to {lang} name")
 
-        self.aname = ATOM_RENAME_MAP[lang].get(self.aname, None) or udict.get(self.aname, None)
+        self.aname = udict.get(a) or ATOM_RENAME_MAP[lang].get(a)
     
     @staticmethod
     def _default_element_derive_func(is_hetatm: bool, aname: str, mname: str, chain: str):
