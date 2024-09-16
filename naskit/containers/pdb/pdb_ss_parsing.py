@@ -68,10 +68,10 @@ COPLANAR_ANGLE_THRESHOLD = 25
 
 @dataclass
 class HBond:
-    donor_res_name: str
-    acceptor_res_name: str
-    donor_name: str
-    acceptor_name: str
+    dres_name: str
+    ares_name: str
+    datom_name: str
+    aatom_name: str
     dist: float
     approximated: bool
     bond_e: float
@@ -83,6 +83,7 @@ class SSParsing:
     
     def to_na(self, 
               approximate_hs: bool = False,
+              unique_bonds: bool = False,
               verbose: bool = False
              ):
         """
@@ -90,7 +91,7 @@ class SSParsing:
         Atomic charges and Lennard-Jones parameters are from amber99bsc1 force field
         """
         
-        energy_matrix = self.get_ss_energy_matrix(approximate_hs, verbose)
+        energy_matrix = self.get_ss_energy_matrix(approximate_hs, unique_bonds, verbose)
         adj = self.parse_ss_adjacency(energy_matrix, threshold= 2*MIN_H_ENERGY_THRESHOLD)
         na = NucleicAcid.from_adjacency(adj, seq=self.seq)
         return na
@@ -181,10 +182,10 @@ class SSParsing:
         return True
 
     
-    def _add_h_bonds(self, 
-                     bonds: list, 
-                     donor: NucleicAcidResidue, 
-                     acceptor: NucleicAcidResidue, 
+    def _add_h_bonds(self,
+                     bonds: list,
+                     donor: NucleicAcidResidue,
+                     acceptor: NucleicAcidResidue,
                      approximate_hs: bool
                     ): 
         
@@ -227,10 +228,10 @@ class SSParsing:
                 
                 e_c = COULOMB_CONST * qa * qd / dist
                 
-                bond = HBond(donor_res_name = donor.mname,
-                               acceptor_res_name = acceptor.mname,
-                               donor_name = hdname,
-                               acceptor_name = acceptor_atom_name,
+                bond = HBond(dres_name = f"{donor.mname}{donor.mnum}",
+                               ares_name = f"{acceptor.mname}{acceptor.mnum}",
+                               datom_name = hdname,
+                               aatom_name = acceptor_atom_name,
                                dist = dist,
                                approximated = need_approximate,
                                bond_e = e_lj+e_c,
@@ -243,8 +244,9 @@ class SSParsing:
         return list(filter(lambda x: x.dist <= H_BOND_DISTANCE_CUTOFF, bonds))
         
     def calculate_h_bonds(self, 
-                          nt1: NucleicAcidResidue, 
-                          nt2: NucleicAcidResidue, 
+                          nt1: NucleicAcidResidue,
+                          nt2: NucleicAcidResidue,
+                          unique_bonds: bool = False,
                           approximate_hs: bool = False
                          ) -> List[HBond]:
         
@@ -259,6 +261,7 @@ class SSParsing:
         
     def get_ss_energy_matrix(self, 
                              approximate_hs: bool = False,
+                             unique_bonds: bool = False,
                              verbose: bool = False
                             ) -> np.ndarray:
         
@@ -272,7 +275,7 @@ class SSParsing:
                 if not self.can_form_pair(nt1, nt2, verbose):
                     continue
 
-                h_bonds = self.calculate_h_bonds(nt1, nt2, approximate_hs)
+                h_bonds = self.calculate_h_bonds(nt1, nt2, unique_bonds, approximate_hs)
                 bond_energy = sum([b.bond_e for b in h_bonds])
 
                 if len(h_bonds)==0:
