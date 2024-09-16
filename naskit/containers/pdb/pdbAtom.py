@@ -72,6 +72,10 @@ class PdbAtom:
                 f"{occupancy}{temp}      "
                 f"{self.segment:<4}{self.element:>2}{charge:<2}")
 
+
+    def __repr__(self):
+        return f"{self.__class__.__name__} {self.anum} {self.aname} ({self.mname} {self.chain} {self.mnum}) at {hex(id(self))}"
+
     
     @property
     def x(self):
@@ -105,11 +109,12 @@ class PdbAtom:
         if len(a.coords.shape)==1:
             return np.linalg.norm(a.coords - self.coords)
         return np.linalg.norm((a.coords - self.coords), axis=1)
-
-    def translate(self, lang: str = "amber"):
-        if self.aname not in ATOM_RENAME_MAP[lang]:
+    
+    def translate(self, lang: str = "amber", udict: dict = {}):
+        if self.aname not in ATOM_RENAME_MAP[lang] and self.aname not in udict:
             raise ValueError(f"Couldn't translate atom {self.aname} {self.anum} in molecule {self.mname} {self.mnum} to {lang} name")
-        self.aname = ATOM_RENAME_MAP[lang][self.aname]
+
+        self.aname = ATOM_RENAME_MAP[lang].get(self.aname, None) or udict.get(self.aname, None)
     
     @staticmethod
     def _default_element_derive_func(is_hetatm: bool, aname: str, mname: str, chain: str):

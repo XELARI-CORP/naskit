@@ -57,9 +57,9 @@ class PDBCompounds(PDBDraw):
             return np.linalg.norm((self.coords - a.coords), axis=1)
         return np.linalg.norm((self.coords[:, np.newaxis, :] - a.coords), axis=2)
 
-    def translate(self, lang: str = "amber"):
+    def translate(self, lang: str = "amber", udict: dict = {}):
         for c in self.__comps:
-            c.translate(lang)
+            c.translate(lang, udict)
     
     def add(self, compound: Union[PdbMolecule, 
                                   NucleicAcidResidue, AminoacidResidue, 

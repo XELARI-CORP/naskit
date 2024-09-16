@@ -68,9 +68,9 @@ class PdbMolecule(PDBDraw):
             return np.linalg.norm((self.coords - a.coords), axis=1)
         return np.linalg.norm((self.coords[:, np.newaxis, :] - a.coords), axis=2)
 
-    def translate(self, lang: str = "amber"):
+    def translate(self, lang: str = "amber", udict: dict = {}):
         for a in self.__atoms:
-            a.translate(lang)
+            a.translate(lang, udict)
         
     def add_atom(self, atom: PdbAtom, skip_validation: bool = False):
         if len(self.__atoms) and (not skip_validation):
