@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "naskit"
-version = "0.8.0"
+version = "0.9.0"
 description = "Library for processing nucleic acid secondary structure"
 authors = ["Artem Mukanov <artem.liamkrow@gmail.com>"]
 license = "LGPLv3"
@@ -22,7 +22,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-numpy = "^1.18.5"
+numpy = "*"
 
 [build-system]
 requires = ["poetry-core", "setuptools"]
