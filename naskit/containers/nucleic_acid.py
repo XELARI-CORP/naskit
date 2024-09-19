@@ -1,6 +1,7 @@
 from functools import cached_property
 from typing import Optional, Union
 from pathlib import Path
+from copy import deepcopy
 import numpy
 import numpy as np
 
@@ -51,7 +52,20 @@ class NucleicAcid(NucleicAcidGraph, DrawNA):
     @cached_property
     def struct(self) -> str:
         return self.assemble_dot_structure()
+
     
+    def copy(self):
+        na = self.__class__()
+        na.name = self.name
+        
+        na._nodes = deepcopy(self._nodes)
+        na._bonds = deepcopy(self._bonds)
+        
+        for k, v in self.meta.items():
+            na.meta[k] = deepcopy(v)
+        
+        return na
+        
     
     def __str__(self):
         s = f"{self.seq}\n{self.struct}"
