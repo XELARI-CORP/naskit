@@ -5,19 +5,6 @@ from ..parse_na import NA
 
 
 
-def set_initial_helix(na: NucleicAcid, n: int):
-    assert len(na.pairs)==0
-    assert len(na) > 2*n
-    
-    sti = random.randint(0, len(na)//2 - n - 1)
-    eni = random.randint(len(na)//2, len(na) - n - 1)
-    a = [sti+i for i in range(n)]
-    b = [eni+i for i in range(n)]
-    
-    for o, e in zip(a, b[::-1]):
-        na.join(o, e)
-
-
 def find_free_motifs(na: NucleicAcid):
     last_nb_has_bond = True
     motifs = []
@@ -85,9 +72,6 @@ def generate_ss(na: Union[NucleicAcid, str],
     na = NA(na) if isinstance(na, str) else na.copy()
     if seed is not None:
         random.seed(seed)
-    
-    if len(na.pairs)==0:
-        set_initial_helix(na, (min_helix_size + max_helix_size)//2)
 
     attempts = patience
     while (compl_ratio(na)<max_compl_ratio and attempts>0):
