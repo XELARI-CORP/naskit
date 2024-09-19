@@ -46,20 +46,29 @@ class NucleicAcidGraph(SimplifiedLinearGraph):
         self.clear_graph_cache()
     
 
-    def split(self, n: int, m: int, clear_cache: bool = True):
+    def split(self,
+              n: Union[int, Helix],
+              m: int = None,
+              clear_cache: bool = True
+             ):
         """
         Breaks complementary bond between specified nbs if exists.
         """
-        if n<0: n = len(self) + n
-        if m<0: m = len(self) + m
-        
-        if (not 0<=n<len(self)) or (not 0<=m<len(self)):
-            raise IndexError(f"Nb index is out of range")
-
-        if self.complnb(n)!=m:
-            raise ValueError(f"Nbs {n} and {m} does not have complementary bond")
-
-        self._remove_bond(n, m)
+        if isinstance(n, Helix):
+            for o, e in n:
+                self._remove_bond(o, e)
+        else:
+            if n<0: n = len(self) + n
+            if m<0: m = len(self) + m
+            
+            if (not 0<=n<len(self)) or (not 0<=m<len(self)):
+                raise IndexError(f"Nb index is out of range")
+    
+            if self.complnb(n)!=m:
+                raise ValueError(f"Nbs {n} and {m} does not have complementary bond")
+    
+            self._remove_bond(n, m)
+            
         if clear_cache:
             self.clear_graph_cache()
         
