@@ -80,6 +80,10 @@ class NucleicAcid(NucleicAcidGraph, DrawNA):
     
     def __len__(self):
         return len(self._nodes)
+
+    
+    def __getitem__(self, i: int): 
+        return self._nodes[i]
     
     
     def __eq__(self, other):
