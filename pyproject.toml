@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "naskit"
-version = "0.9.0"
+version = "0.10.0"
 description = "Library for processing nucleic acid secondary structure"
 authors = ["Artem Mukanov <artem.liamkrow@gmail.com>"]
 license = "LGPLv3"
