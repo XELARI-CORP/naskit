@@ -84,6 +84,19 @@ class NucleicAcid(NucleicAcidGraph, DrawNA):
     
     def __getitem__(self, i: int): 
         return self._nodes[i]
+
+
+    def __setitem__(self, i: int, value: str):
+        if not isinstance(value, str):
+            raise ValueError("Nucleotide must be string")
+
+        if len(value)!=1:
+            raise ValueError("Nucleotide must be one character")
+
+        if not value.isalpha():
+            raise ValueError("Nucleotide must be alphabetic character")
+            
+        self._nodes[i] = value
     
     
     def __eq__(self, other):
