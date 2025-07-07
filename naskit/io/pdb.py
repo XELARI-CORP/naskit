@@ -15,7 +15,11 @@ from ..exceptions import InvalidPDB
 
 
 NA_NAMES = {"A", "U", "G", "C", "I", "T",
-            "DA", "DT", "DG", "DC"}
+            "DA", "DT", "DG", "DC",
+            "FA", "FG", "FC", "FT", "FU",
+            "SA", "SG", "SC", "SU", "ST",
+            "SFT", "SFU", "SFA", "SFG", "SFC"
+            }
 
 AMINOACID_NAMES = {'ALA', 'CYS', 'ASP', 'GLU', 
                    'PHE', 'GLY', 'ILE', 'LYS', 
