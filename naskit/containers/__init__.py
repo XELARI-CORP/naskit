@@ -1,7 +1,7 @@
 from .nucleic_acid import NucleicAcid
 from .nucleic_acid_graph import NucleicAcidGraph
 from .nucleic_acid_fragments import Helix, Loop, _make_loop, Hairpin, InternalLoop, Bulge, Junction
-import pdb
+from . import pdb
 
 __all__ = ['NucleicAcid', 'NucleicAcidGraph', 
            '_make_loop', 
